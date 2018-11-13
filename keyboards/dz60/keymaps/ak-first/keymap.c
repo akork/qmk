@@ -5,8 +5,11 @@
 
 enum custom_keycodes {
 		      _VIMRC = SAFE_RANGE,
-                      _CC_PLS,
-                      _CC_MIN,
+                      CC_PLS,
+                      CC_MIN,
+		      CXCS,
+		      CXCS_CXE,
+		      CXCS_CZ,
 };
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
@@ -26,12 +29,24 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 ); // this is our macro
       return false;
       break;
-    case _CC_PLS:
+    case CC_PLS:
       SEND_STRING(SS_LCTRL("c") "+");
       return false;
 
-    case _CC_MIN:
+    case CC_MIN:
       SEND_STRING(SS_LCTRL("c") "-");
+      return false;
+
+    case CXCS:
+      SEND_STRING(SS_LCTRL("xs"));
+      return false;
+
+    case CXCS_CXE:
+      SEND_STRING(SS_LCTRL("xsx") "e");
+      return false;
+
+    case CXCS_CZ:
+      SEND_STRING(SS_LCTRL("xsz"));
       return false;
     }
   }
@@ -43,11 +58,12 @@ enum {
       SMETA,
       RSFT,
       NMETA,
-      EMETA,
-      HMETA,
+      QMETA,
+      HMETA, // 6
       LCMETA,
       RCMETA,
-      META // 9
+      META, // 9
+      TABMETA
 };
   
 
@@ -61,14 +77,15 @@ enum {
 #define _RA_ KC_RALT
 
 #define _LS__ MT(MOD_LSFT, KC_TAB)
-#define _SM__ LT(2, KC_ENT)
+#define _ENT__ LT(2, KC_ENT)
 #define _RS__ LT(3, KC_TAB)
 #define _NM__ LT(4, KC_SCLN)
-#define _EM__ LT(5, KC_Q)
-#define _HM__ LT(6, KC_H)
+#define _QM__ LT(QMETA, KC_Q)
+#define _HM__ LT(HMETA, KC_H)
 #define _LC__ LT(7, KC_ESC)
 #define _RC__ LT(8, KC_ESC)
-#define _MT__ LT(9, KC_SPC)
+#define _SPC__ LT(META, KC_SPC)
+#define _TAB__ LT(TABMETA, KC_TAB)
 
 #define TR KC_TRNS
 
@@ -110,10 +127,16 @@ enum {
 #define _Y KC_Y
 #define _Z KC_Z
 
+#define _RT KC_RGHT
+#define _LT KC_LEFT
+#define _UP KC_UP
+#define _DN KC_DOWN
+
 #define _CSL KC_BSLS
 #define _COM KC_COMM
 #define _MIN KC_MINS
 #define _TAB KC_TAB
+#define _TB KC_TAB
 #define _CAP KC_CAPS
 #define _LBR KC_LBRC
 #define _RBR KC_RBRC
@@ -128,30 +151,44 @@ enum {
 #define _ENT KC_ENT
 #define _DOW KC_DOWN
 #define _UP KC_UP
+#define _EQL KC_EQL
+#define _SCLN KC_SCLN
+#define _GRV KC_GRV
+#define CTA(x) LCTL(LALT(x))
+#define ALT(x) LALT(x)
+#define CTL(x) LCTL(x)
+#define GUI(x) LGUI(x)
+#define _PGUP KC_PGUP
+#define _PGDN KC_PGDN
+
+
+
+
+
+
 
 #define _UND S(KC_MINS)
-const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
+const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = 
   {
-
    LAYOUT
-   (_ESC,             S(_1),   _COM,    _UND,    _TAB,    S(_5),   _CAP,    S(_7),   _MIN,    S(_9),   S(_0),   _LBR,    _RBR,    _NO,     _BSP,
-    _LS_,             _Y,      _SM__,   _O,      _DOT,    _U,               _Z,      _G,      _C,      _R,      _F,      _RS_,    _SLS,    _BSL,
-    _NM__,            _I,      _A,      _E,      _EM__,   _L,               _D,      _H,      _T,      _N,      _S,      _B,               _QUO,
+   (_ESC,             S(_1),   _UND,    _COM,    _TAB__,  S(_5),   _CAP,    S(_7),   _MIN,    S(_9),   S(_0),   _LBR,    _RBR,    _NO,     _BSP,
+    _LS_,             _Y,      _ENT__,  _O,      _DOT,    _U,               _Z,      _G,      _C,      _R,      _F,      _RS_,    _SLS,    _BSL,
+    _NM__,            _I,      _A,      _E,      _QM__,   _L,               _D,      _HM__,   _T,      _N,      _S,      _B,               _QUO,
     _LC__,   _NO,     _BSL,    S(_5),   _J,      _K,      _QUO,             _P,      _M,      _W,      _V,      _X,               _RC__,   _NO,
-    _LC_,                      _LG_,    _LA_,             _SPC,    _MT__,   _SPC,             _RG_,    _SPC,             _NO,     _DOW,    _UP),
+    _LC_,                      _LG_,    _LA_,             _SPC,    _SPC__,   _SPC,             _RG_,    _SPC,             _NO,     _DOW,    _UP),
 
-   LAYOUT // -
+   LAYOUT // -lshift
    (TR,               TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,
     TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,
     TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,      TR,      TR,      TR,      TR,               TR,
     TR,      TR,      TR,      TR,      TR,      TR,      TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,
     TR,                        TR,      TR,               TR,      TR,      TR,               TR,      TR,               TR,      TR,      TR),
 
-   LAYOUT // -
-   (TR,               TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,
-    TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,
-    TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,      TR,      TR,      TR,      TR,               TR,
-    TR,      TR,      TR,      TR,      TR,      TR,      TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,
+   LAYOUT // -W__
+   (TR,               TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      S(_GRV), _GRV,   TR,       TR,      TR,      TR,
+    TR,               TR,      TR,      TR,      TR,      TR,               S(_6),   S(_COM), _EQL,    S(_QUO), S(_DOT), _SLS,   TR,      TR,
+    TR,               TR,      TR,      TR,      TR,      TR,               S(_1),   S(_SCLN),S(_8),   S(_EQL), S(_4),   S(_3),            TR,
+    TR,      TR,      TR,      TR,      TR,      TR,      TR,               LCTL(_R),CTA(_S), LCTL(_W),TR,      TR,               TR,      TR,
     TR,                        TR,      TR,               TR,      TR,      TR,               TR,      TR,               TR,      TR,      TR),
 
    LAYOUT // -
@@ -165,48 +202,48 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
    (TR,               TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      _VIMRC,
     TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,      _9,      _0,      _5,      TR,      TR,      TR,
     TR,               TR,      TR,      TR,      TR,      TR,               _6,      _1,      _2,      _3,      _4,      TR,               TR,
-    TR,      TR,      TR,      TR,      TR,      TR,      TR,               _7,      _8,      TR,      _CC_PLS, _CC_MIN, TR,      TR,
+    TR,      TR,      TR,      TR,      TR,      TR,      TR,               _7,      _8,      TR,      CC_PLS,  CC_MIN,  TR,      TR,
     TR,                        TR,      TR,               TR,      TR,      TR,               TR,      TR,               TR,      TR,      TR),
 
-   LAYOUT // -
+   LAYOUT // -QMETA
+   (TR,               TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,
+    TR,               TR,      TR,      CTL(_G), TR,      TR,               TR,      _PGDN,   _DN,     _UP,     _PGUP,   TR,      TR,      TR,
+    TR,               TR,      TR,      TR,      TR,      TR,               GUI(_LT),_BSP,    _RT,     ALT(_RT),GUI(_RT),TR,               TR,
+    TR,      TR,      TR,      TR,      TR,      TR,      TR,               ALT(_LT),_LT,     ALT(_W), CTA(_Y),TR,                TR,      TR,
+    TR,                        TR,      TR,               TR,      TR,      TR,               TR,      TR,               TR,      TR,      TR),
+
+   LAYOUT // -HMETA
+   (TR,               TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,
+    TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,      _ESC,    TR,      TR,      TR,      TR,      TR,
+    TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,      TR,      TR,      TR,      TR,               TR,
+    TR,      TR,      TR,      TR,      TR,      TR,      TR,               TR,      TR,      CXCS,    CXCS_CXE,CXCS_CZ, TR,      TR,
+    TR,                        TR,      TR,               TR,      TR,      TR,               TR,      TR,               TR,      TR,      TR),
+
+   LAYOUT // -LCMETA
    (TR,               TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,
     TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,
     TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,      TR,      TR,      TR,      TR,               TR,
     TR,      TR,      TR,      TR,      TR,      TR,      TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,
     TR,                        TR,      TR,               TR,      TR,      TR,               TR,      TR,               TR,      TR,      TR),
 
-   LAYOUT // -
+   LAYOUT // -RCMETA
    (TR,               TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,
     TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,
     TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,      TR,      TR,      TR,      TR,               TR,
     TR,      TR,      TR,      TR,      TR,      TR,      TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,
     TR,                        TR,      TR,               TR,      TR,      TR,               TR,      TR,               TR,      TR,      TR),
 
-   LAYOUT // -
+   LAYOUT // -SPC (META)
    (TR,               TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,
-    TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,
-    TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,      TR,      TR,      TR,      TR,               TR,
-    TR,      TR,      TR,      TR,      TR,      TR,      TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,
+    TR,               TR,      TR,      TR,      KC_F15,  TR,               TR,      TR,      CTL(S(_TAB)),CTL(_TAB),TR, TR,      TR,      TR,
+    TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,      TR,      RGUI(_TB),GUI(_L),TR,               TR,
+    TR,      TR,      TR,      TR,      TR,      TR,      TR,            S(GUI(_TB)),TR,      TR,      TR,      TR,               TR,      TR,
     TR,                        TR,      TR,               TR,      TR,      TR,               TR,      TR,               TR,      TR,      TR),
 
-   LAYOUT // -
+   LAYOUT // -TAB (4META)
    (TR,               TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,
     TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,
-    TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,      TR,      TR,      TR,      TR,               TR,
-    TR,      TR,      TR,      TR,      TR,      TR,      TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,
-    TR,                        TR,      TR,               TR,      TR,      TR,               TR,      TR,               TR,      TR,      TR),
-
-   LAYOUT // -
-   (TR,               TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,
-    TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,
-    TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,      TR,      TR,      TR,      TR,               TR,
-    TR,      TR,      TR,      TR,      TR,      TR,      TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,
-    TR,                        TR,      TR,               TR,      TR,      TR,               TR,      TR,               TR,      TR,      TR),
-
-   LAYOUT // -
-   (TR,               TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,
-    TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,
-    TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,      TR,      TR,      TR,      TR,               TR,
+    TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,      ALT(_X), TR,      TR,      TR,               TR,
     TR,      TR,      TR,      TR,      TR,      TR,      TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,
     TR,                        TR,      TR,               TR,      TR,      TR,               TR,      TR,               TR,      TR,      TR),
 
