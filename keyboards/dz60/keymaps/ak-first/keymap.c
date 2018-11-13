@@ -206,7 +206,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
     TR,                        TR,      TR,               TR,      TR,      TR,               TR,      TR,               TR,      TR,      TR),
 
    LAYOUT // -QMETA
-   (TR,               TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,
+   (TR,               TR,      TR,      TR,      TR,      TR,      TR,      TR,     ALT(_BSP),TR,      TR,      TR,      TR,      TR,      TR,
     TR,               TR,      TR,      CTL(_G), TR,      TR,               TR,      _PGDN,   _DN,     _UP,     _PGUP,   TR,      TR,      TR,
     TR,               TR,      TR,      TR,      TR,      TR,               GUI(_LT),_BSP,    _RT,     ALT(_RT),GUI(_RT),TR,               TR,
     TR,      TR,      TR,      TR,      TR,      TR,      TR,               ALT(_LT),_LT,     ALT(_W), CTA(_Y),TR,                TR,      TR,
