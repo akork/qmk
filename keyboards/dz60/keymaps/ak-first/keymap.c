@@ -10,6 +10,22 @@ enum custom_keycodes {
 		      CXCS,
 		      CXCS_CXE,
 		      CXCS_CZ,
+		      LSWITCH
+};
+
+enum {
+      LSFT = 1,
+      ENTMETA,
+      RSFT,
+      NMETA,
+      QMETA,
+      HMETA, // 6
+      LCMETA,
+      RCMETA,
+      META, // 9
+      TABMETA,
+      RU,
+      RUENTMETA
 };
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
@@ -48,24 +64,15 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     case CXCS_CZ:
       SEND_STRING(SS_LCTRL("xsz"));
       return false;
+    
+    case LSWITCH:
+      layer_on(RU);
+      SEND_STRING(SS_LGUI(SS_LALT("a")));
+      return false;
     }
   }
   return true;
 };
-
-enum {
-      LSFT = 1,
-      SMETA,
-      RSFT,
-      NMETA,
-      QMETA,
-      HMETA, // 6
-      LCMETA,
-      RCMETA,
-      META, // 9
-      TABMETA
-};
-  
 
 #define _LS_ KC_LSFT
 #define _RS_ KC_RSFT
@@ -77,13 +84,14 @@ enum {
 #define _RA_ KC_RALT
 
 #define _LS__ MT(MOD_LSFT, KC_TAB)
-#define _ENT__ LT(2, KC_ENT)
-#define _RS__ LT(3, KC_TAB)
-#define _NM__ LT(4, KC_SCLN)
+#define _ENT_ LT(ENTMETA, KC_ENT)
+#define _RUENT_ LT(RUENTMETA, KC_ENT)
+#define _RS__ LT(RSFT, KC_TAB)
+#define _NM__ LT(NMETA, KC_SCLN)
 #define _QM__ LT(QMETA, KC_Q)
 #define _HM__ LT(HMETA, KC_H)
-#define _LC__ LT(7, KC_ESC)
-#define _RC__ LT(8, KC_ESC)
+#define _LC__ LT(LCMETA, KC_ESC)
+#define _RC__ LT(RCMETA, KC_ESC)
 #define _SPC__ LT(META, KC_SPC)
 #define _TAB__ LT(TABMETA, KC_TAB)
 
@@ -172,7 +180,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
   {
    LAYOUT
    (_ESC,             S(_1),   _UND,    _COM,    _TAB__,  S(_5),   _CAP,    S(_7),   _MIN,    S(_9),   S(_0),   _LBR,    _RBR,    _NO,     _BSP,
-    _LS_,             _Y,      _ENT__,  _O,      _DOT,    _U,               _Z,      _G,      _C,      _R,      _F,      _RS_,    _SLS,    _BSL,
+    _LS_,             _Y,      _ENT_,  _O,      _DOT,    _U,               _Z,      _G,      _C,      _R,      _F,      _RS_,    _SLS,    _BSL,
     _NM__,            _I,      _A,      _E,      _QM__,   _L,               _D,      _HM__,   _T,      _N,      _S,      _B,               _QUO,
     _LC__,   _NO,     _BSL,    S(_5),   _J,      _K,      _QUO,             _P,      _M,      _W,      _V,      _X,               _RC__,   _NO,
     _LC_,                      _LG_,    _LA_,             _SPC,    _SPC__,   _SPC,             _RG_,    _SPC,             _NO,     _DOW,    _UP),
@@ -247,8 +255,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
     TR,      TR,      TR,      TR,      TR,      TR,      TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,
     TR,                        TR,      TR,               TR,      TR,      TR,               TR,      TR,               TR,      TR,      TR),
 
-   LAYOUT // -
-   (TR,               TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,
+   LAYOUT // -RU
+   (TR,               _Q,      _RUENT_,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,
     TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,
     TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,      TR,      TR,      TR,      TR,               TR,
     TR,      TR,      TR,      TR,      TR,      TR,      TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,
