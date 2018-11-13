@@ -184,9 +184,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
     TR,      TR,      TR,      TR,      TR,      TR,      TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,
     TR,                        TR,      TR,               TR,      TR,      TR,               TR,      TR,               TR,      TR,      TR),
 
-   LAYOUT // -W__
+   LAYOUT // -ENTMETA__
    (TR,               TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      S(_GRV), _GRV,   TR,       TR,      TR,      TR,
-    TR,               TR,      TR,      TR,      TR,      TR,               S(_6),   S(_COM), _EQL,    S(_QUO), S(_DOT), _SLS,   TR,      TR,
+    TR,               TR,      TR,     GUI(_ENT),TR,      TR,               S(_6),   S(_COM), _EQL,    S(_QUO), S(_DOT), _SLS,   TR,      TR,
     TR,               TR,      TR,      TR,      TR,      TR,               S(_1),   S(_SCLN),S(_8),   S(_EQL), S(_4),   S(_3),            TR,
     TR,      TR,      TR,      TR,      TR,      TR,      TR,               LCTL(_R),CTA(_S), LCTL(_W),TR,      TR,               TR,      TR,
     TR,                        TR,      TR,               TR,      TR,      TR,               TR,      TR,               TR,      TR,      TR),
@@ -235,7 +235,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 
    LAYOUT // -SPC (META)
    (TR,               TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,
-    TR,               TR,      TR,      TR,      KC_F15,  TR,               TR,      TR,      CTL(S(_TAB)),CTL(_TAB),TR, TR,      TR,      TR,
+    TR,               TR,     GUI(_ENT),TR,      KC_F15,  TR,               TR,      TR,      CTL(S(_TAB)),CTL(_TAB),TR, TR,      TR,      TR,
     TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,      TR,      RGUI(_TB),GUI(_L),TR,               TR,
     TR,      TR,      TR,      TR,      TR,      TR,      TR,            S(GUI(_TB)),TR,      TR,      TR,      TR,               TR,      TR,
     TR,                        TR,      TR,               TR,      TR,      TR,               TR,      TR,               TR,      TR,      TR),
