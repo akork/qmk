@@ -16,16 +16,16 @@ enum custom_keycodes {
 enum {
       LSFT = 1,
       ENTMETA,
+      RUENTMETA,
       RSFT,
       NMETA,
       QMETA,
-      HMETA, // 6
+      HMETA, // 7
       LCMETA,
       RCMETA,
-      META, // 9
+      META, // 10
       TABMETA,
       RU,
-      RUENTMETA
 };
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
@@ -67,7 +67,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     
     case LSWITCH:
       layer_on(RU);
-      SEND_STRING(SS_LGUI(SS_LALT("a")));
+      SEND_STRING((SS_LALT("x")));
       return false;
     }
   }
@@ -192,10 +192,17 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
     TR,      TR,      TR,      TR,      TR,      TR,      TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,
     TR,                        TR,      TR,               TR,      TR,      TR,               TR,      TR,               TR,      TR,      TR),
 
-   LAYOUT // -ENTMETA__
+   LAYOUT // -ENTMETA_
    (TR,               TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      S(_GRV), _GRV,   TR,       TR,      TR,      TR,
     TR,               TR,      TR,     GUI(_ENT),TR,      TR,               S(_6),   S(_COM), _EQL,    S(_QUO), S(_DOT), _SLS,   TR,      TR,
     TR,               TR,      TR,      TR,      TR,      TR,               S(_1),   S(_SCLN),S(_8),   S(_EQL), S(_4),   S(_3),            TR,
+    TR,      TR,      TR,      TR,      TR,      TR,      TR,               LCTL(_R),CTA(_S), LCTL(_W),LCTL(_S),TR,               TR,      TR,
+    TR,                        TR,      TR,               TR,      TR,      TR,               TR,      TR,               TR,      TR,      TR),
+
+   LAYOUT // -RUENTMETA_
+   (TR,               TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      S(_GRV), _GRV,   TR,       TR,      TR,      TR,
+    TR,               TR,      TR,     GUI(_ENT),TR,      TR,               S(_6),   S(_COM), _EQL,    S(_QUO), S(_DOT), _SLS,   TR,      TR,
+    TR,               TR,      TR,      TR,      TR,      TR,               S(_1),   _A,      S(_8),   S(_EQL), S(_4),   S(_3),            TR,
     TR,      TR,      TR,      TR,      TR,      TR,      TR,               LCTL(_R),CTA(_S), LCTL(_W),TR,      TR,               TR,      TR,
     TR,                        TR,      TR,               TR,      TR,      TR,               TR,      TR,               TR,      TR,      TR),
 
