@@ -66,7 +66,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       return false;
     
     case LSWITCH:
-      layer_on(RU);
+      layer_on(12);
       SEND_STRING((SS_LALT("x")));
       return false;
     }
@@ -166,6 +166,8 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 #define ALT(x) LALT(x)
 #define CTL(x) LCTL(x)
 #define GUI(x) LGUI(x)
+#define GUA(x) LGUI(LALT(x))
+#define GACS(x) LGUI(LALT(LCTL(LSHFT(x))))
 #define _PGUP KC_PGUP
 #define _PGDN KC_PGDN
 
@@ -180,12 +182,12 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
   {
    LAYOUT
    (_ESC,             S(_1),   _UND,    _COM,    _TAB__,  S(_5),   _CAP,    S(_7),   _MIN,    S(_9),   S(_0),   _LBR,    _RBR,    _NO,     _BSP,
-    _LS_,             _Y,      _ENT_,  _O,      _DOT,    _U,               _Z,      _G,      _C,      _R,      _F,      _RS_,    _SLS,    _BSL,
+    _LS_,             _Y,      _ENT_,   _O,      _DOT,    _U,               _Z,      _G,      _C,      _R,      _F,      _RS_,    _SLS,    _BSL,
     _NM__,            _I,      _A,      _E,      _QM__,   _L,               _D,      _HM__,   _T,      _N,      _S,      _B,               _QUO,
     _LC__,   _NO,     _BSL,    S(_5),   _J,      _K,      _QUO,             _P,      _M,      _W,      _V,      _X,               _RC__,   _NO,
     _LC_,                      _LG_,    _LA_,             _SPC,    _SPC__,   _SPC,             _RG_,    _SPC,             _NO,     _DOW,    _UP),
 
-   LAYOUT // -lshift
+   LAYOUT // -lshift = 1
    (TR,               TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,
     TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,
     TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,      TR,      TR,      TR,      TR,               TR,
@@ -213,10 +215,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
     TR,      TR,      TR,      TR,      TR,      TR,      TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,
     TR,                        TR,      TR,               TR,      TR,      TR,               TR,      TR,               TR,      TR,      TR),
 
-   LAYOUT // -NMETA
+   LAYOUT // -NMETA = 5
    (TR,               TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      _VIMRC,
-    TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,      _9,      _0,      _5,      TR,      TR,      TR,
-    TR,               TR,      TR,      TR,      TR,      TR,               _6,      _1,      _2,      _3,      _4,      TR,               TR,
+    TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,      _0,      _9,      TR,      TR,      TR,      TR,
+    TR,               TR,      TR,      TR,      TR,      TR,               _6,      _1,      _2,      _3,      _4,      _5,               TR,
     TR,      TR,      TR,      TR,      TR,      TR,      TR,               _7,      _8,      TR,      CC_PLS,  CC_MIN,  TR,      TR,
     TR,                        TR,      TR,               TR,      TR,      TR,               TR,      TR,               TR,      TR,      TR),
 
@@ -230,7 +232,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
    LAYOUT // -HMETA
    (TR,               TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,
     TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,      _ESC,    TR,      TR,      TR,      TR,      TR,
-    TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,      TR,      TR,      TR,      TR,               TR,
+    TR,               TR,      TR,      TR,      LSWITCH, TR,               TR,      TR,      TR,      TR,      TR,      TR,               TR,
     TR,      TR,      TR,      TR,      TR,      TR,      TR,               TR,      TR,      CXCS,    CXCS_CXE,CXCS_CZ, TR,      TR,
     TR,                        TR,      TR,               TR,      TR,      TR,               TR,      TR,               TR,      TR,      TR),
 
@@ -248,23 +250,23 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
     TR,      TR,      TR,      TR,      TR,      TR,      TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,
     TR,                        TR,      TR,               TR,      TR,      TR,               TR,      TR,               TR,      TR,      TR),
 
-   LAYOUT // -SPC (META)
+   LAYOUT // -SPC (META) = 10
    (TR,               TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,
     TR,               TR,     GUI(_ENT),TR,      KC_F15,  TR,               TR,      TR,      CTL(S(_TAB)),CTL(_TAB),TR, TR,      TR,      TR,
-    TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,      TR,      RGUI(_TB),GUI(_L),TR,               TR,
+    TR,               TR,      TR,      TR,      GACS(_SPC),TR,             TR,      GUA(_DN),TR,      GUI(_TB),GUI(_L),TR,               TR,
     TR,      TR,      TR,      TR,      TR,      TR,      TR,            S(GUI(_TB)),TR,      TR,      TR,      TR,               TR,      TR,
     TR,                        TR,      TR,               TR,      TR,      TR,               TR,      TR,               TR,      TR,      TR),
 
    LAYOUT // -TAB (4META)
    (TR,               TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,
     TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,
-    TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,      ALT(_X), TR,      TR,      TR,               TR,
+    TR,               TR,      TR,      TR,      TR,      TR,               TR,      ALT(_X), ALT(_X), TR,      TR,      TR,               TR,
     TR,      TR,      TR,      TR,      TR,      TR,      TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,
     TR,                        TR,      TR,               TR,      TR,      TR,               TR,      TR,               TR,      TR,      TR),
 
    LAYOUT // -RU
-   (TR,               _Q,      _RUENT_,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,
-    TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,
+   (TR,               _Q,      _RUENT_, TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,
+    TR,               _Q,      _RUENT_, TR,      TR,      TR,               TR,      TR,      TR,      TR,      TR,      TR,      TR,      TR,
     TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,      TR,      TR,      TR,      TR,               TR,
     TR,      TR,      TR,      TR,      TR,      TR,      TR,               TR,      TR,      TR,      TR,      TR,               TR,      TR,
     TR,                        TR,      TR,               TR,      TR,      TR,               TR,      TR,               TR,      TR,      TR),
