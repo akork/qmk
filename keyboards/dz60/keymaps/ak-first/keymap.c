@@ -394,7 +394,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
     _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
 
    LAYOUT // -rshift = 4
-   (_ESC,             S(S(_1)),S(_UND), S(_COM), _TAB__,  S(_5),   S(_CAP), S(_7),   S(_MIN), S(_9),   S(_0),   S(_LBR), S(_RBR), _NO,     S(_BSP),
+   (_ESC,             _______, S(_UND), S(_COM), _TAB__,  S(_5),   S(_CAP), S(_7),   S(_MIN), S(_9),   S(_0),   S(_LBR), S(_RBR), _NO,     S(_BSP),
     _LS__,            S(_Y),   _ENT_,   S(_O),   S(_DOT), S(_U),            S(_Z),   S(_G),   S(_C),   S(_R),   S(_F),   LBR_RBR_LFT,S(_SLS),S(_BSL),
     _NM__,            S(_I),   S(_A),   S(_E),   S(_Q),   S(_L),            S(_D),   S(_H),   S(_T),   S(_N),   S(_S),   S(_B),            S(_QUO),
     _LC__,   _NO,     S(_BSL), S(_5),   S(_J),   S(_K),   S(_QUO),          S(_P),   S(_M),   S(_W),   S(_V),   S(_X),            _RC__,   _NO,
