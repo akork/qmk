@@ -7,10 +7,12 @@
 static bool isCmdSetByMeta = false;
 
 enum custom_keycodes {
-		      MMETA,
+		      MMETA = SAFE_RANGE,
 		      RCMD,
 		      LCMD,
-		      _VIMRC = SAFE_RANGE,
+		      LALT,
+		      RALT,
+		      _VIMRC,
                       CC_PLS,
                       CC_MIN,
 		      CXCS,
@@ -42,10 +44,10 @@ enum {
       RU = 1,
       LSFT,
       LSFTRU,
-      ENTMETA,
-      RUENTMETA,
       RSFT,
       RSFTRU,
+      ENTMETA,
+      RUENTMETA,
       NMETA,
       QMETA,
       HMETA, // 7
@@ -72,7 +74,7 @@ static const uint16_t timer_threshold = 150;
 
 void increase_timer(void) {
   uint8_t layer = biton32(layer_state);
-  if (layer == META) timer += timer_threshold;
+  if (layer == META) timer += 2 * timer_threshold;
 }
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
@@ -145,6 +147,32 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
 	register_code(KC_K);
 	unregister_code(KC_K);
+
+	register_code(KC_LCTRL);
+	register_code(KC_LBRC);
+	unregister_code(KC_LBRC);
+	unregister_code(KC_LCTRL);
+      }
+    }
+    return false;
+  case RALT:
+    if (record->event.pressed) {
+      rcmd_timer = timer_read();
+      /* layer_on(RCMDL); */
+      register_code(KC_RALT);
+    } else {
+      unregister_code(KC_RALT);
+      /* layer_off(RCMDL); */
+      if (timer_elapsed(rcmd_timer) < timer_threshold) {
+	register_code(KC_LCTRL);
+	register_code(KC_X);
+	unregister_code(KC_X);
+	register_code(KC_J);
+	unregister_code(KC_J);
+	unregister_code(KC_LCTRL);
+
+	register_code(KC_T);
+	unregister_code(KC_T);
 
 	register_code(KC_LCTRL);
 	register_code(KC_LBRC);
@@ -295,6 +323,8 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 #define _LT KC_LEFT
 #define _UP KC_UP
 #define _DN KC_DOWN
+#define _VUP KC__VOLUP
+#define _VDN KC_VOLDOWN
 
 #define _CSL KC_BSLS
 #define _COM KC_COMM
@@ -328,7 +358,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 #define _PGUP KC_PGUP
 #define _PGDN KC_PGDN
 
-#define _UND S(KC_MINS)
 #define _LS__ LT(LSFT, KC_RBRC)
 #define _LSRU LT(LSFTRU, KC_RBRC)
 #define _RS__ LT(RSFT, KC_LBRC)
@@ -352,30 +381,44 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = 
   {
    LAYOUT
-   (_ESC,             S(_1),   _UND,    _COM,    _TAB__,  S(_5),   _CAP,    S(_7),   _MIN,    S(_9),   S(_0),   KC__VOLDOWN,KC__VOLUP,_NO, _BSP,
+   (_ESC,             S(_1),   S(_MIN), _COM,    _TAB__,  S(_5),   _CAP,    S(_7),   _MIN,    S(_9),   S(_0),   _VDN,    _VUP,    _NO,     _BSP,
     _LS__,            _Y,      _ENT_,   _O,      _DOT,    _U,               _Z,      _G,      _C,      _R,      _F,      _RS__,   _SLS,    _BSL,
-    _NM__,            _I,      _A,      _E,      _QM__,   _L,               _D,      _HM__,   _T,      _N,      _S,      _B,               _QUO,
+    _NM__,            _I,      _A,      _E,      _QM__,   _L,               _D,      _HM__,   _T,      _N,      _S,      _B,               _SPC,  
     _LC__,   _NO,     _BSL,    S(_5),   _J,      _K,      _QUO,             _P,      _M,      _W,      _V,      _X,               _RC__,   _NO,
-    _LC_,                      _LA_,    _LG_,             _SPC,    MMETA,   _SPC,             RCMD,    _SPC,             _NO,     _DOW,    _UP),
+    _LC_,                      _LA_,    _LG_,             _SPC,    MMETA,   _SPC,             RCMD,    RALT,             _NO,     _DOW,    _UP),
 
    LAYOUT // -RU
-   (_______,          _______, _RUENT_, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
+   (_______,          _______, _W,      _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
     _LSRU,            _Q,      _RUENT_, _J,      _SLS,    _E,               _LBR,    _U,      _Z,      _H,      _P,      _RSRU,   _O,      _______,
-    _______,          _B,      _F,      _T,      _QMRU__, _K,               _L,      _HMRU__, _N,      _Y,      _C,      _COM,             _O,
+    _______,          _B,      _F,      _T,      _QMRU__, _K,               _L,      _HMRU__, _N,      _Y,      _C,      _COM,             _ENT,
     _______, _______, _QUO,    _I,      _SCLN,   _M,      _S,               _G,      _V,      _D,      _X,      _A,               _______, _______,
     _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
 
    LAYOUT // -lshift = 1
-   (_______,          S(S(_1)),S(_UND), S(_COM), _TAB__,  S(_5),   S(_CAP), S(_7),   S(_MIN), S(_9),   S(_0),   S(_LBR), S(_RBR), _NO,     S(_BSP),
+   (_______,          S(S(_1)),_______, S(_COM), _TAB__,  S(_5),   S(_CAP), S(_7),   S(_MIN), S(_9),   S(_0),   S(_LBR), S(_RBR), _NO,     S(_BSP),
+    _LS__,            S(_Y),   _ENT_,   S(_O),   S(_DOT), S(_U),            S(_Z),   S(_G),   S(_C),   S(_R),   S(_F),   LBR_RBR_LFT,S(_SLS),S(_BSL),
+    _NM__,            S(_I),   S(_A),   S(_E),   S(_Q),   S(_L),            S(_D),   S(_H),   S(_T),   S(_N),   S(_S),   S(_B),            S(_QUO),
+    _LC__,   _NO,     S(_BSL), S(_5),   S(_J),   S(_K),   S(_QUO),          S(_P),   S(_M),   S(_W),   S(_V),   S(_X),            _RC__,   _NO,
+    _LC_,                      _______,    _______,            _SPC,    MMETA,   _SPC,             _RG_,    _SPC,             _NO,     _DOW,    _UP),
+
+   LAYOUT // -lshiftRU
+   (_______,          _______, S(_W),   _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
+    _______,          S(_Q),   S(_ENT), S(_J),   S(_SLS), S(_E),            S(_LBR), S(_U),   S(_Z),   S(_H),   S(_P),   _______, S(_O),   _______,
+    _______,          S(_B),   S(_F),   S(_T),   S(_DOT), S(_K),            S(_L),   S(_R),   S(_N),   S(_Y),   S(_C),   S(_COM),          S(_ENT),
+    _______, _______, S(_QUO), S(_I),   S(_SCLN),S(_M),   S(_S),            S(_G),   S(_V),   S(_D),   S(_X),   S(_A),            _______, _______,
+    _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
+
+   LAYOUT // -rshift = 4
+   (_ESC,             _______, S(_MIN), S(_COM), _TAB__,  S(_5),   S(_CAP), S(_7),   S(_MIN), S(_9),   S(_0),   S(_LBR), S(_RBR), _NO,     S(_BSP),
     _LS__,            S(_Y),   _ENT_,   S(_O),   S(_DOT), S(_U),            S(_Z),   S(_G),   S(_C),   S(_R),   S(_F),   LBR_RBR_LFT,S(_SLS),S(_BSL),
     _NM__,            S(_I),   S(_A),   S(_E),   S(_Q),   S(_L),            S(_D),   S(_H),   S(_T),   S(_N),   S(_S),   S(_B),            S(_QUO),
     _LC__,   _NO,     S(_BSL), S(_5),   S(_J),   S(_K),   S(_QUO),          S(_P),   S(_M),   S(_W),   S(_V),   S(_X),            _RC__,   _NO,
     _LC_,                      _LG_,    MMETA,            _SPC,    MMETA,   _SPC,             _RG_,    _SPC,             _NO,     _DOW,    _UP),
 
-   LAYOUT // -lshiftRU
+   LAYOUT // -rshiftRU
    (_______,          _______, _RUENT_, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
     _______,          S(_Q),   _RUENT_, S(_J),   S(_SLS), S(_E),            S(_LBR), S(_U),   S(_Z),   S(_H),   S(_P),   _______, S(_O),   _______,
-    _______,          S(_B),   S(_F),   S(_T),   S(_DOT), S(_K),            S(_L),   S(_R),   S(_N),   S(_Y),   S(_C),   S(_COM),          S(_O),
+    _______,          S(_B),   S(_F),   S(_T),   S(_Q),   S(_K),            S(_L),   S(_H),   S(_N),   S(_Y),   S(_C),   S(_COM),          S(_O),
     _______, _______, S(_QUO), S(_I),   S(_SCLN),S(_M),   S(_S),            S(_G),   S(_V),   S(_D),   S(_X),   S(_A),            _______, _______,
     _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
 
@@ -393,20 +436,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
     _______, _______, _______, _______, _______, _______, _______,          LCTL(_R),CTA(_S), LCTL(_W),_______, _______,          _______, _______,
     _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
 
-   LAYOUT // -rshift = 4
-   (_ESC,             _______, S(_UND), S(_COM), _TAB__,  S(_5),   S(_CAP), S(_7),   S(_MIN), S(_9),   S(_0),   S(_LBR), S(_RBR), _NO,     S(_BSP),
-    _LS__,            S(_Y),   _ENT_,   S(_O),   S(_DOT), S(_U),            S(_Z),   S(_G),   S(_C),   S(_R),   S(_F),   LBR_RBR_LFT,S(_SLS),S(_BSL),
-    _NM__,            S(_I),   S(_A),   S(_E),   S(_Q),   S(_L),            S(_D),   S(_H),   S(_T),   S(_N),   S(_S),   S(_B),            S(_QUO),
-    _LC__,   _NO,     S(_BSL), S(_5),   S(_J),   S(_K),   S(_QUO),          S(_P),   S(_M),   S(_W),   S(_V),   S(_X),            _RC__,   _NO,
-    _LC_,                      _LG_,    MMETA,            _SPC,    MMETA,   _SPC,             _RG_,    _SPC,             _NO,     _DOW,    _UP),
-
-   LAYOUT // -rshiftRU
-   (_______,          _______, _RUENT_, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
-    _______,          S(_Q),   _RUENT_, S(_J),   S(_SLS), S(_E),            S(_LBR), S(_U),   S(_Z),   S(_H),   S(_P),   _______, S(_O),   _______,
-    _______,          S(_B),   S(_F),   S(_T),   S(_Q),   S(_K),            S(_L),   S(_H),   S(_N),   S(_Y),   S(_C),   S(_COM),          S(_O),
-    _______, _______, S(_QUO), S(_I),   S(_SCLN),S(_M),   S(_S),            S(_G),   S(_V),   S(_D),   S(_X),   S(_A),            _______, _______,
-    _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
-
    LAYOUT // -NMETA = 5
    (_______,          _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _VIMRC,
     _______,          _______, _______, _______, _______, _______,          _______, _______, _0,      _9,      _______, _______, _______, _______,
@@ -417,7 +446,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
    LAYOUT // -eMETA
    (_______,          _______, _______, _______, _______, _______, _______, _______,A(_BSP),  _______, _______, _______, _______, _______, _______,
     _______,          A(_D),   _______, _ESC,    C(S(_MIN)),_______,        _______, _PGDN,   _DN,     _UP,     _PGUP,   _______, _______, _______,
-    _______,          C(_K),   C(_D),   A(_U),   _______, _______,          GUI(_LT),_BSP,    _RT,     A(_RT),  GUI(_RT),M0_CK,            _______,
+    _______,          M0_CK,   C(_D),   A(_U),   _______, _______,          GUI(_LT),_BSP,    _RT,     A(_RT),  GUI(_RT),C(_K),            _______,
     _______, _______, _______, _______, _______, _______, _______,          A(_LT),  _LT,     A(_W),   CTA(_Y),_______,           A(_BSL), _______,
     _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
 
@@ -429,7 +458,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
     _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
 
    LAYOUT // -LCMETA
-   (_______,          S(_1),   _UND,    _COM,    _TAB__,  S(_5),   _CAP,    S(_7),   C(_MIN),  S(_9),  S(_0),   C(_LBR), C(_RBR), _NO,     C(_BSP),  
+   (_______,          _______, S(_MIN), _COM,    _TAB__,  S(_5),   _CAP,    S(_7),   C(_MIN),  S(_9),  S(_0),   C(_LBR), C(_RBR), _NO,     C(_BSP),  
     _LS__,            C(_Y),   _ENT_,   C(_O),   C(_DOT),  C(_U),           C(_Z),   C(_G),   C(_C),   C(_R),   C(_F),   _RS__,   _SLS,    _BSL,
     _NM__,            C(_I),   C(_A),   C(_E),   C(_Q),   C(_L),            C(_X),   C(_H),   C(_T),   C(_N),   C(_S),   C(_B),            C(_QUO),  
     _LC__,   _NO,     _BSL,    S(_5),   C(_J),   C(_K),   C(_QUO),          C(_P),   C(_M),   C(_W),   C(_V),   C(_X),            _RC__,   _NO,
