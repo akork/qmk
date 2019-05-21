@@ -569,7 +569,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 #define _ENT_ LT(ENTMETA, KC_ENT)
 #define _RUENT_ LT(RUENTMETA, KC_ENT)
 #define _TAB__ LT(TABMETA, KC_TAB)
-#define _NM__ LT(NMETAL, KC_SCLN)
 #define _QM__ LT(QMETA, KC_Q)
 #define _QMRU__ LT(QMETA, KC_DOT)
 #define _QMWIN LT(QMETAWIN, KC_Q)
@@ -592,9 +591,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
      LAYOUT
      (_M,               S(_1),   _COM,    _ESC,    _TAB__,  S(_5),   MAC,     S(_7),   _MIN,    S(_9),   S(_0),   _VDN,    _VUP,    _NO,     _BSP,
       LSFT,             _Y,      _ENT_,   _O,      _DOT,    _U,               _Z,      _G,      _C,      _R,      _F,      _RS__,   _SLS,    _BSL,
-      _NM__,            _I,      _A,      _E,      _QMWIN,  _L,               _D,      _HM__,   _T,      _N,      _S,      _B,               _SPC,
+      NMETA,            _I,      _A,      _E,      _QMWIN,  _L,               _D,      _HM__,   _T,      _N,      _S,      _B,               _SPC,
       LCTL,    _NO,     _BSL,    S(_5),   _J,      _K,      _QUO,             _P,      _M,      _W,      _V,      _X,               _RC__,   _NO,
       _LC_,                      _LALT,   _LGUI,            _SPC,    WINMETA, _SPC,             RCMD,    RALT,             _NO,     _DOW,    _UP),
+
 
      LAYOUT // -RU
      (_______,          _______, S(_SLS), _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
@@ -606,7 +606,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
      LAYOUT // -rshift = 5
      (_ESC,             _______, S(_MIN), S(_COM), _TAB__,  S(_5),   S(_CAP), S(_7),   COM_MIN, S(_9),   S(_0),   _______, S(_RBR), _NO,     S(_BSP),
       LBR_RBR_LFT,      S(_Y),   S(_ENT), S(_O),   S(_DOT), S(_U),            S(_Z),   S(_G),   S(_C),   S(_R),   S(_F),   LBR_RBR_LFT,S(_SLS),S(_BSL),
-      _NM__,            S(_I),   S(_A),   S(_E),   S(_Q),   S(_L),            S(_D),   S(_H),   S(_T),   S(_N),   S(_S),   S(_B),            S(_QUO),
+      NMETA,            S(_I),   S(_A),   S(_E),   S(_Q),   S(_L),            S(_D),   S(_H),   S(_T),   S(_N),   S(_S),   S(_B),            S(_QUO),
       LCTL,   _NO,      S(_BSL), S(_5),   S(_J),   S(_K),   S(_QUO),          S(_P),   S(_M),   S(_W),   S(_V),   S(_X),            _RC__,   _NO,
       _LC_,                      _LGUI,    _______,          _SPC,    S(_SPC), _SPC,             _RG_,    _SPC,             _NO,     _DOW,    _UP),
 
@@ -663,7 +663,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
      LAYOUT // -LCMETA
      (_______,          _______, S(_MIN), _COM,    _TAB__,  S(_5),   _CAP,    S(_7),   C(_MIN),  S(_9),  S(_0),   C(_LBR), C(_RBR), _NO,     C(_BSP),
       _LS__,            C(_Y),   _ENT_,   C(_O),   C(_DOT),  C(_U),           C(_Z),   C(_G),   C(_C),   C(_R),   C(_F),   _RS__,   _SLS,    _BSL,
-      _NM__,            C(_I),   C(_A),   C(_E),   C(_Q),   C(_L),            C(_X),   C(_H),   C(_T),   C(_N),   C(_S),   C(_B),            C(_QUO),
+      NMETA,            C(_I),   C(_A),   C(_E),   C(_Q),   C(_L),            C(_X),   C(_H),   C(_T),   C(_N),   C(_S),   C(_B),            C(_QUO),
       LCTL,    _NO,     _BSL,    S(_5),   C(_J),   C(_K),   C(_QUO),          C(_P),   C(_M),   C(_W),   C(_V),   C(_X),            _RC__,   _NO,
       _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
 
