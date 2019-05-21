@@ -9,6 +9,7 @@
 enum custom_keycodes {
                       MAC = SAFE_RANGE,
                       WIN,
+                      NMETA,
                       MACMETA,
                       WINMETA,
                       RCMD,
@@ -72,7 +73,7 @@ enum {
       LRSFTRU,
       ENTMETA,
       RUENTMETA,
-      NMETA,
+      NMETAL,
       QMETA,
       QMETAWIN,
       HMETA,
@@ -283,6 +284,17 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   }
 
   switch (keycode) {
+  case NMETA:
+    if (record->event.pressed) {
+      layer_on(NMETAL);
+      lsft_timer = timer_read();
+    } else {
+      layer_off(NMETAL);
+      if (timer_elapsed(lsft_timer) < timer_threshold) {
+        SEND_STRING(SS_LCTRL("g"));
+      }
+    }
+    return false;
   case LSFT:
     if (record->event.pressed) {
       register_code(KC_LSFT);
@@ -557,7 +569,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 #define _ENT_ LT(ENTMETA, KC_ENT)
 #define _RUENT_ LT(RUENTMETA, KC_ENT)
 #define _TAB__ LT(TABMETA, KC_TAB)
-#define _NM__ LT(NMETA, KC_SCLN)
+#define _NM__ LT(NMETAL, KC_SCLN)
 #define _QM__ LT(QMETA, KC_Q)
 #define _QMRU__ LT(QMETA, KC_DOT)
 #define _QMWIN LT(QMETAWIN, KC_Q)
@@ -571,9 +583,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
     {
      LAYOUT
-     (_ESC,             S(_1),   _COM,    _ESC,    _TAB__,  S(_5),   WIN,     S(_7),   _MIN,    S(_9),   _COM,    _VDN,    _VUP,    _NO,     RGB_TOG,
+     (_ESC,             S(_1),   S(_MIN), _ESC,    _TAB__,  S(_5),   WIN,     S(_7),   _MIN,    S(_9),   _COM,    _VDN,    _VUP,    _NO,     RGB_TOG,
       LSFT,             _Y,      _ENT_,   _O,      _DOT,    _U,               _Z,      _G,      _C,      _R,      _F,      RSFT,    _SLS,    _BSL,
-      _NM__,            _I,      _A,      _E,      _QM__,   _L,               _D,      _HM__,   _T,      _N,      _S,      _B,               _SPC,
+      NMETA,            _I,      _A,      _E,      _QM__,   _L,               _D,      _HM__,   _T,      _N,      _S,      _B,               _SPC,
       LCTL,    _NO,     _BSL,    S(_5),   _J,      _K,      _QUO,             _P,      _M,      _W,      _V,      _X,               _RC__,   _NO,
       _LC_,                      _LALT,   _LGUI,            _SPC,    MACMETA, _SPC,             RCMD,    RALT,             _NO,     _DOW,    _UP),
 
