@@ -34,6 +34,7 @@ enum custom_keycodes {
                       SALTTAB,
                       ALTQUO,
                       LBR_RBR_LFT,
+                      GQ,
                       CX_G,
                       CX_Z,
                       CX_F,
@@ -89,10 +90,12 @@ enum {
 uint32_t default_layer_state_set_user(uint32_t state) {
     switch (biton32(state)) {
     case RU:
+        rgblight_enable();
         rgblight_setrgb (0xFF,  0x00, 0x00);
         break;
     default: //  for any other layers, or the default layer
-        rgblight_setrgb (0x00,  0x00, 0xFF);
+        /* rgblight_setrgb (0x00,  0x00, 0xFF); */
+        rgblight_disable();
         break;
     }
   return state;
@@ -111,7 +114,7 @@ void unregister_cmd_after_cmdtab(void) {
   }
 };
 
-static uint16_t timer, rcmd_timer, lctl_timer, lsft_timer;
+static uint16_t timer, rcmd_timer, lctl_timer, lsft_timer, rsft_timer;
 static const uint16_t timer_threshold = 250;
 
 void increase_timer(void) {
@@ -127,6 +130,8 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     lctl_timer += 2 * timer_threshold;
   if (keycode != LSFT)
     lsft_timer += 2 * timer_threshold;
+  if (keycode != RSFT)
+      rsft_timer += 2 * timer_threshold;
   }
   switch(keycode) {
   case MACMETA:
@@ -320,9 +325,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   case RSFT:
     if (record->event.pressed) {
       layer_on(LRSFT);
-      lctl_timer = timer_read();
+      rsft_timer = timer_read();
     } else {
-      if (timer_elapsed(lctl_timer) < timer_threshold) {
+      if (timer_elapsed(rsft_timer) < timer_threshold) {
         SEND_STRING(")");
       }
       layer_off(LRSFT);
@@ -458,6 +463,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     case BRACES:
       SEND_STRING("{}" SS_TAP(X_LEFT));
       return false;
+    case GQ:
+        register_code(KC_LGUI);
+        register_code(KC_Q);
+        unregister_code(KC_Q);
+        return false;
     }
     return true;
   }
@@ -557,11 +567,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 #define _HOME KC_HOME
 #define _END KC_END
 
-
-#define C(x) LCTL(x)
-#define A(x) LALT(x)
-#define G(x) LGUI(x)
-
 #define _LS__ LT(LRSFT, KC_RBRC)
 #define _LSRU LT(LRSFTRU, KC_RBRC)
 #define _RS__ LT(LRSFT, KC_LBRC)
@@ -582,14 +587,14 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
     {
      LAYOUT
-     (_ESC,             S(_1),   S(_MIN), _ESC,    _TAB__,  S(_5),   WIN,     S(_7),   _MIN,    S(_9),   _COM,    _VDN,    _VUP,    _NO,     RGB_TOG,
+     (_ESC,             S(_1),   S(_MIN), _ESC,    _TAB__,  S(_5),   _______, S(_7),   _MIN,    S(_9),   _COM,    _VDN,    _VUP,    _NO,     _BSP,
       LSFT,             _Y,      _ENT_,   _O,      _DOT,    _U,               _Z,      _G,      _C,      _R,      _F,      RSFT,    _SLS,    _BSL,
       NMETA,            _I,      _A,      _E,      _QM__,   _L,               _D,      _HM__,   _T,      _N,      _S,      _B,               _SPC,
-      LCTL,    _NO,     _BSL,    S(_5),   _J,      _K,      _QUO,             _P,      _M,      _W,      _V,      _X,               _RC__,   _NO,
+      LCTL,    _A,     _BSL,    S(_5),   _J,      _K,      _QUO,              _P,      _M,      _W,      _V,      _X,               _RC__,   RGB_TOG,
       _LC_,                      _LALT,   _LGUI,            _SPC,    MACMETA, _SPC,             RCMD,    RALT,             _NO,     _DOW,    _UP),
 
      LAYOUT
-     (_M,               S(_1),   _COM,    _ESC,    _TAB__,  S(_5),   MAC,     S(_7),   _MIN,    S(_9),   S(_0),   _VDN,    _VUP,    _NO,     _BSP,
+     (_M,               S(_1),   _COM,    _ESC,    _TAB__,  S(_5),   _______, S(_7),   _MIN,    S(_9),   S(_0),   _VDN,    _VUP,    _NO,     _BSP,
       LSFT,             _Y,      _ENT_,   _O,      _DOT,    _U,               _Z,      _G,      _C,      _R,      _F,      _RS__,   _SLS,    _BSL,
       NMETA,            _I,      _A,      _E,      _QMWIN,  _L,               _D,      _HM__,   _T,      _N,      _S,      _B,               _SPC,
       LCTL,    _NO,     _BSL,    S(_5),   _J,      _K,      _QUO,             _P,      _M,      _W,      _V,      _X,               _RC__,   _NO,
@@ -597,7 +602,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
 
      LAYOUT // -RU
-     (_______,          _______, S(_SLS), _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
+     (_______,          _______, S(_SLS), _______, _______, _______, _RBR,    _______, _______, _______, _______, _______, _______, _______, _______,
       _LSRU,            _Q,      _RUENT_, _J,      _SLS,    _E,               _LBR,    _U,      _Z,      _H,      _P,      _RSRU,   S(_BSL), _O,
       _______,          _B,      _F,      _T,      _QMRU__, _K,               _L,      _HMRU__, _N,      _Y,      _C,      _COM,             _W,
       _______, _______, _QUO,    _I,      _SCLN,   _M,      _S,               _G,      _V,      _D,      _X,      _A,               _______, _______,
@@ -620,7 +625,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
      LAYOUT // -sMETA
      (_______,          _______, _______, _______, _______, _______, _______, _______, _______, S(_GRV), _GRV,   _______,  _______, _______, _______,
       _______,          _______, _______,G(_ENT),  _______, _______,          S(_6),   S(_COM), _EQL,    S(_QUO), S(_DOT), S(_7),   _______, _______,
-      _______,          S(_2),   _______, _______, _______, S(_1),            S(_1),   S(_SCLN), S(_8),  S(_EQL), S(_4),   S(_3),            _______,
+      _______,          S(_2),   _______, _______, _______, S(_1),            _SCLN,   S(_SCLN), S(_8),  S(_EQL), S(_4),   S(_3),            _______,
       _______, _______, _______, _______, _______, _______, _______,          LCTL(_R),CTA(_S), LCTL(_W),LCTL(_S),S(_SLS),          _______, _______,
       _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
 
@@ -655,7 +660,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
      LAYOUT // -hMETA
      (G(_SPC),          _______, PARENS,  _______, _______, _______, _______, _______, ALG(_TAB),BRACKS, BRACES, _______, _______, _______, _______,
-      EENTER,           _______, _______, _______, _______, _______,          _______, _______, _ESC,    _______, C(_G),   _______, _______, _______,
+      EENTER,           _______, _______, _______, _______, _______,          _______, _______, _ESC,    _______, C(_G),  _______, _______, _______,
       _______,          _______, _______, _______, LSWITCH, _______,          _______, _______, _______, _______, _______, _______,          _______,
       _______, _______, _______, _______, _______, _______, _______,          _______, _______, CXCS,    CXCS_CXE,CXCS_CZ, CXCS_CXCC,_______,
       _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
@@ -677,7 +682,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
      LAYOUT // -META
      (DF(1),            _______, KC_F17,  KC_F18,  _______, _______, _______, _______, G(_LBR), C(S(_TAB)),C(_TAB),G(_W),  G(_Z),  _______, _______,
       WIN,              _______,G(_ENT),  _______, KC_F15,  _______,          G(_R),   ALTTAB,  SCMDTAB, CMDTAB,  SALTTAB, G(_RBR),  _______,_______,
-      _______,          _______, CXCJ_P,  CXCJ_CP, GACS(_SPC),_______,        _______, GUA(_DN),CTA(_T), G(_V),   G(_L),   G(_Q),            _______,
+      _______,          _______, CXCJ_P,  CXCJ_CP, GACS(_SPC),_______,        G(_A),   GUA(_DN),G(_C),   G(_V),   G(_L),   GQ,            _______,
       _______, _______, _______, _______, _______, _______, _______,          _______, G(_C),   _______, _______, _______,          _______, _______,
       _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
 
@@ -686,6 +691,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       MAC,              _______,G(_ENT),  _______, G(_UP),  _______,          C(_R),   ALTQUO,  ALTTAB,  SALTTAB, CMDTAB,  A(_RT),  _______, _______,
       _______,          _______, _______, _______, G(_S),   _______,          A(_SPC), G(_1),   CTA(_T), CMDTAB,  C(_L),   A(KC_F4),         _______,
       _______, _______, _______, _______, _______, _______, _______,          G(_3),   G(_4),   _______, _______, C(S(_Q)),         _______, _______,
+
       _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
 
      LAYOUT // -TAB (4META)
