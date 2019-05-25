@@ -22,6 +22,7 @@ enum custom_keycodes {
                       _VIMRC,
                       CC_PLS,
                       CC_MIN,
+                      CX_CC,
                       CXCS,
                       CXCS_CXE,
                       CXCS_CZ,
@@ -385,24 +386,27 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     case CX_F:
       SEND_STRING(SS_LCTRL("x") "f");
       return false;
+    case CX_CC:
+        SEND_STRING(SS_LCTRL("xc"));
+        return false;
     case CX_CF:
-      SEND_STRING(SS_LCTRL("xf"));
-      return false;
+        SEND_STRING(SS_LCTRL("xf"));
+        return false;
     case CX_O:
-      SEND_STRING(SS_LCTRL("x") "o");
-      return false;
+        SEND_STRING(SS_LCTRL("x") "o");
+        return false;
     case CX_B:
-      SEND_STRING(SS_LCTRL("x") "b");
-      return false;
+        SEND_STRING(SS_LCTRL("x") "b");
+        return false;
     case CX_0:
-      SEND_STRING(SS_LCTRL("x") "0");
-      return false;
+        SEND_STRING(SS_LCTRL("x") "0");
+        return false;
     case CX_1:
-      SEND_STRING(SS_LCTRL("x") "1");
-      return false;
+        SEND_STRING(SS_LCTRL("x") "1");
+        return false;
     case CX_3:
-      SEND_STRING(SS_LCTRL("x") "3");
-      return false;
+        SEND_STRING(SS_LCTRL("x") "3");
+        return false;
     case M0_CK:
       SEND_STRING(SS_LALT("0") SS_LCTRL("k"));
       return false;
@@ -698,7 +702,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
      (_______,          _______, _______, _______, _______, _______, _______, _______, _______, CX_CF,   CX_F,    CX_3,    CX_RBRC, _______,  CXCJ_0,
       _______,          _______, _______, _______, _______, _______,          CX_Z,    CX_G,    CX_O,    CX_1,    CX_0,    CX_0,    _______, CX_LBRC,
       _______,          _______, _______, _______, _______, A(S(_1)),         A(S(_SCLN)),A(_X),S(_F10), CXCJ_CT, CX_1,    CXCJ_I,           _______,
-      _______, _______, _______, _______, _______, _______, _______,          C(A(S(_5))),CXCJ_D,CXCJ_CD,CXCJ_MD, _______,          CXCJ_CC, _______,
+      _______, _______, _______, _______, _______, _______, _______,          C(A(S(_5))),CXCJ_D,CXCJ_CD,CXCJ_CC, _______,          CX_CC,   _______,
       _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, RGB_HUI, RGB_HUD),
 
     };
