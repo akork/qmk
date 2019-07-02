@@ -595,18 +595,18 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
   {
    LAYOUT
-   (_ESC,             S(_1),   S(_MIN), _ESC,    _TAB__,  S(_5),   _______, S(_7),   _MIN,    S(_9),   _COM,    _VDN,    _VUP,    _NO,     _BSP,
+   (_ESC,             S(_1),   _BSP,    _ESC,    _TAB__,  S(_5),   _______, S(_7),   _MIN,    S(_9),   _COM,    _VDN,    _VUP,    _NO,     _BSP,
     LSFT,             _Y,      _ENT_,   _O,      _DOT,    _U,               _Z,      _G,      _C,      _R,      _F,      RSFT,    _SLS,    _BSL,
     NMETA,            _I,      _A,      _E,      _QM__,   _L,               _D,      _HM__,   _T,      _N,      _S,      _B,               _SPC,
     LCTL,    _A,     _BSL,    S(_5),   _J,      _K,      _QUO,              _P,      _M,      _W,      _V,      _X,               _RC__,   RGB_TOG,
-    _LC_,                      _LALT,   _LGUI,            _SPC,    MACMETA, _SPC,             RCMD,    RALT,             _NO,     _DOW,    _UP),
+    _LC_,                      _LALT,   _LGUI,            _SPC,    MACMETA, RCMD,             RALT,    RALT,             _NO,     _DOW,    _UP),
 
    LAYOUT
-   (_M,               S(_1),   _COM,    _ESC,    _TAB__,  S(_5),   _______, S(_7),   _MIN,    S(_9),   S(_0),   _VDN,    _VUP,    _NO,     _BSP,
+   (_M,               S(_1),   _BSP,    _ESC,    _TAB__,  S(_5),   _______, S(_7),   _MIN,    S(_9),   S(_0),   _VDN,    _VUP,    _NO,     _BSP,
     LSFT,             _Y,      _ENT_,   _O,      _DOT,    _U,               _Z,      _G,      _C,      _R,      _F,      _RS__,   _SLS,    _BSL,
     NMETA,            _I,      _A,      _E,      _QMWIN,  _L,               _D,      _HM__,   _T,      _N,      _S,      _B,               _SPC,
     LCTL,    _NO,     _BSL,    S(_5),   _J,      _K,      _QUO,             _P,      _M,      _W,      _V,      _X,               _RC__,   _NO,
-    _LC_,                      _LALT,   _LGUI,            _SPC,    WINMETA, _SPC,             RCMD,    RALT,             _NO,     _DOW,    _UP),
+    _LC_,                      _LALT,   _LGUI,            _SPC,    WINMETA, RCMD,             RALT,    RALT,             _NO,     _DOW,    _UP),
 
    LAYOUT // -RU
    (_______,          _______, S(_SLS), _______, _______, _______, _RBR,    _______, _______, _______, S(_SLS), _______, _______, _______, _______,
