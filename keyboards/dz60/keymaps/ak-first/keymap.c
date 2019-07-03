@@ -607,11 +607,11 @@ void keyboard_post_init_user(void) {
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
   {
    LAYOUT
-   (TEST,            S(_1),   _ESC,    _BSP,    _TAB__,  S(_5),   _______, S(_7),   _MIN,    S(_9),   _COM,    _VDN,    _VUP,    _NO,     _BSP,
-    LSFT,             _Y,      _ENT_,   _O,      _DOT,    _U,               _Z,      _G,      _C,      _R,      _F,      RSFT,    _SLS,    _BSL,
+   (TEST,             S(_1),   _ESC,    _BSP,    _TAB__,  S(_5),   _______, S(_7),   _MIN,    S(_9),   _COM,    _LBR,    _VUP,    _NO,     _BSP,
+    LSFT,             _Y,      _ENT_,   _O,      _DOT,    _U,               _Z,      _G,      _C,      _R,      _F,      RSFT,    _SLS,    _RBR,
     NMETA,            _I,      _A,      _E,      _QM__,   _L,               _D,      _HM__,   _T,      _N,      _S,      _B,               _SPC,
     LCTL,    _A,     _BSL,     S(_5),   _J,      _K,      _QUO,             _P,      _M,      _W,      _V,      _X,               _RC__,   RGB_TOG,
-    _LC_,                      _LGUI,   _LALT,            _SPC,    MACMETA, RCMD,             RALT,    RALT,             _NO,     _DOW,    _UP),
+    _LC_,                      _LGUI,   _LALT,            _SPC,    MACMETA, RCMD,             RALT,    _VDN,             _VUP,    _DOW,    _UP),
 
    LAYOUT
    (_M,               S(_1),   _ESC,    _BSP,    _TAB__,  S(_5),   _______, S(_7),   _MIN,    S(_9),   S(_0),   _VDN,    _VUP,    _NO,     _BSP,
@@ -678,7 +678,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 
 
    LAYOUT // -hMETA
-   (G(_SPC),          _______, PARENS,  _______, _______, _______, _______, _______, ALG(_TAB),BRACKS, BRACES, _______, _______, _______, _______,
+   (G(_SPC),          _______, PARENS,  _______, _______, _______, _______, _______, PARENS,  BRACKS, BRACES, _______, _______, _______, _______,
     EENTER,           _______, _______, _______, _______, _______,          _______, _______, _ESC,    _______, C(_G),  _______, _______, _______,
     _______,          _______, _______, _______, LSWITCH, _______,          _______, _______, _______, _______, _______, _______,          _______,
     _______, _______, _______, _______, _______, _______, _______,          _______, _______, CXCS,    CXCS_CXE,CXCS_CZ, CXCS_CXCC,_______,
