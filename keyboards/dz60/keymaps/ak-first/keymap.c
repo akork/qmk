@@ -121,7 +121,6 @@ static uint16_t timer, rcmd_timer, lctl_timer, lsft_timer, rsft_timer;
 static const uint16_t timer_threshold = 250;
 static uint8_t rgblight_mode_current = RGBLIGHT_MODE_KNIGHT + 1;
 
-
 void increase_timer(void) {
   uint8_t layer = biton32(layer_state);
   if (layer == MACMETAL) timer += 2 * timer_threshold;
@@ -616,15 +615,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 
    LAYOUT
    (_M,               S(_1),   _ESC,    _BSP,    _TAB__,  S(_5),   _______, S(_7),   _MIN,    S(_9),   S(_0),   _VDN,    _VUP,    _NO,     _BSP,
-    LSFT,             _Y,      _ENT_,   _O,      _DOT,    _U,               _Z,      _G,      _C,      _R,      _F,      _RS__,   _SLS,    _BSL,
-    NMETA,            _I,      _A,      _E,      _QMWIN,  _L,               _D,      _HM__,   _T,      _N,      _S,      _B,               _SPC,
-    LCTL,    _NO,     _BSL,    S(_5),   _J,      _K,      _QUO,             _P,      _M,      _W,      _V,      _X,               _RC__,   _NO,
-    _LC_,                      _LGUI,   _LALT,            _SPC,    WINMETA, RCMD,             RALT,    RALT,             _NO,     _DOW,    _UP),
-
-   LAYOUT // -RU
-   (_______,          _______, _______ , _______, _______, _______, _RBR,    _______, _______, _______, S(_SLS), _______, _______, _______, _______,
-    _LSRU,            _Q,      _RUENT_, _J,      _SLS,    _E,               _LBR,    _U,      _Z,      _H,      _P,      _RSRU,   S(_BSL), _O,
-    _______,          _B,      _F,      _T,      _QMRU__, _K,               _L,      _HMRU__, _N,      _Y,      _C,      _COM,             _W,
     LSFT,             _Y,      _ENT_,   _O,      _DOT,    _U,               _Z,      _G,      _C,      _R,      _F,      _RS__,   _SLS,    _BSL,
     NMETA,            _I,      _A,      _E,      _QMWIN,  _L,               _D,      _HM__,   _T,      _N,      _S,      _B,               _SPC,
     LCTL,    _NO,     _BSL,    S(_5),   _J,      _K,      _QUO,             _P,      _M,      _W,      _V,      _X,               _RC__,   _NO,
