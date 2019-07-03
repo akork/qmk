@@ -7,7 +7,8 @@
 // static bool isCmdSetByMeta = false;
 
 enum custom_keycodes {
-                      MAC = SAFE_RANGE,
+					  TEST = SAFE_RANGE,
+                      MAC,
                       WIN,
                       NMETA,
                       MACMETA,
@@ -92,12 +93,12 @@ enum {
 uint32_t default_layer_state_set_user(uint32_t state) {
   switch (biton32(state)) {
   case RU:
-    rgblight_enable();
-    rgblight_setrgb (0xFF,  0x00, 0x00);
+    rgblight_enable_noeeprom();
+    /* rgblight_setrgb (0xFF,  0x00, 0x00); */
     break;
   default: //  for any other layers, or the default layer
     /* rgblight_setrgb (0x00,  0x00, 0xFF); */
-    rgblight_disable();
+    rgblight_disable_noeeprom();
     break;
   }
   return state;
@@ -118,6 +119,7 @@ void unregister_cmd_after_cmdtab(void) {
 
 static uint16_t timer, rcmd_timer, lctl_timer, lsft_timer, rsft_timer;
 static const uint16_t timer_threshold = 250;
+static uint8_t rgblight_mode_current = RGBLIGHT_MODE_KNIGHT + 1;
 
 void increase_timer(void) {
   uint8_t layer = biton32(layer_state);
@@ -136,6 +138,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       rsft_timer += 2 * timer_threshold;
   }
   switch(keycode) {
+  case TEST:
+	rgblight_mode_noeeprom(rgblight_mode_current++); // sets mode to Fast breathing without saving
+	return false;
   case MACMETA:
     if (record->event.pressed) {
       timer = timer_read();
@@ -591,11 +596,18 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 #define _RC__ C(A(_Y))
 #define _SPC__ LT(META, KC_SPC)
 
+void keyboard_post_init_user(void) {
+  // Call the post init code.
+  rgblight_enable_noeeprom(); // enables Rgb, without saving settings
+  /* rgblight_sethsv_noeeprom(250, 200, 100); // sets the color to teal/cyan without saving */
+  rgblight_mode_noeeprom(rgblight_mode_current); // sets mode to Fast breathing without saving
+  rgblight_disable_noeeprom();
+}
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
   {
    LAYOUT
-   (_ESC,             S(_1),   _ESC,    _BSP,    _TAB__,  S(_5),   _______, S(_7),   _MIN,    S(_9),   _COM,    _VDN,    _VUP,    _NO,     _BSP,
+   (TEST,            S(_1),   _ESC,    _BSP,    _TAB__,  S(_5),   _______, S(_7),   _MIN,    S(_9),   _COM,    _VDN,    _VUP,    _NO,     _BSP,
     LSFT,             _Y,      _ENT_,   _O,      _DOT,    _U,               _Z,      _G,      _C,      _R,      _F,      RSFT,    _SLS,    _BSL,
     NMETA,            _I,      _A,      _E,      _QM__,   _L,               _D,      _HM__,   _T,      _N,      _S,      _B,               _SPC,
     LCTL,    _A,     _BSL,     S(_5),   _J,      _K,      _QUO,             _P,      _M,      _W,      _V,      _X,               _RC__,   RGB_TOG,
@@ -609,7 +621,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
     _LC_,                      _LGUI,   _LALT,            _SPC,    WINMETA, RCMD,             RALT,    RALT,             _NO,     _DOW,    _UP),
 
    LAYOUT // -RU
-   (_______,          _______, S(_SLS), _______, _______, _______, _RBR,    _______, _______, _______, S(_SLS), _______, _______, _______, _______,
+   (_______,          _______, _______ , _______, _______, _______, _RBR,    _______, _______, _______, S(_SLS), _______, _______, _______, _______,
     _LSRU,            _Q,      _RUENT_, _J,      _SLS,    _E,               _LBR,    _U,      _Z,      _H,      _P,      _RSRU,   S(_BSL), _O,
     _______,          _B,      _F,      _T,      _QMRU__, _K,               _L,      _HMRU__, _N,      _Y,      _C,      _COM,             _W,
     _______, _______, _QUO,    _I,      _SCLN,   _M,      _S,               _G,      _V,      _D,      _X,      _A,               _______, _______,
