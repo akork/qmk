@@ -63,6 +63,7 @@ enum custom_keycodes {
                       CX_RBRC,
                       COM_MIN,
                       EENTER,
+                      EEENTER,
                       PARENS,
                       BRACES,
                       BRACKS,
@@ -462,7 +463,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       SEND_STRING(",-");
       return false;
     case EENTER:
-      SEND_STRING(SS_TAP(X_ENTER) SS_TAP(X_UP) SS_DOWN(X_LGUI) SS_TAP(X_RIGHT) SS_UP(X_LGUI));
+      SEND_STRING(SS_TAP(X_UP) SS_DOWN(X_LGUI) SS_TAP(X_RIGHT) SS_UP(X_LGUI) SS_TAP(X_ENTER) SS_TAP(X_TAB));
+      return false;
+    case EEENTER:
+      SEND_STRING(SS_TAP(X_ENTER) SS_TAP(X_UP) SS_DOWN(X_LGUI) SS_TAP(X_RIGHT) SS_UP(X_LGUI) SS_TAP(X_ENTER) SS_TAP(X_TAB));
       return false;
     case PARENS:
       SEND_STRING("()" SS_TAP(X_LEFT));
@@ -608,7 +612,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
   {
    LAYOUT
    (TEST,             S(_1),   _ESC,    _BSP,    _TAB__,  S(_5),   _______, S(_7),   _MIN,    S(_9),   _COM,    _LBR,    _VUP,    _NO,     _BSP,
-    LSFT,             _Y,      _ENT_,   _O,      _DOT,    _U,               _Z,      _G,      _C,      _R,      _F,      RSFT,    _SLS,    _RBR,
+    LSFT,             _Y,      _ENT_,   _O,      _DOT,    _U,               _Z,      _G,      _C,      _R,      _F,      RSFT,    _SLS,    EENTER,
     NMETA,            _I,      _A,      _E,      _QM__,   _L,               _D,      _HM__,   _T,      _N,      _S,      _B,               _SPC,
     LCTL,    _A,     _BSL,     S(_5),   _J,      _K,      _QUO,             _P,      _M,      _W,      _V,      _X,               _RC__,   RGB_TOG,
     _LC_,                      _LGUI,   _LALT,            _SPC,    MACMETA, RCMD,             RALT,    _VDN,             _VUP,    _DOW,    _UP),
@@ -643,7 +647,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 
    LAYOUT // -sMETA
    (_______,          _______, _______, _______, _______, _______, _______, _______, _______, S(_GRV), _GRV,   _______,  _______, _______, _______,
-    _______,          _______, _______,G(_ENT),  _______, _______,          S(_6),   S(_COM), _EQL,    S(_QUO), S(_DOT), S(_7),   _______, _______,
+    _______,          _______, _______,G(_ENT),  _______, _______,          S(_6),   S(_COM), _EQL,    S(_QUO), S(_DOT), S(_7),   _______, EEENTER,
     _______,          S(_2),   _______, _______, _______, S(_1),            _SCLN,   S(_SCLN), S(_8),  S(_EQL), S(_4),   S(_3),            _______,
     _______, _______, _______, _______, _______, _______, _______,          LCTL(_R),CTA(_S), LCTL(_W),LCTL(_S),S(_SLS),          _______, _______,
     _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
