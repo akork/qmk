@@ -314,7 +314,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     } else {
       unregister_code(KC_LSFT);
       if (timer_elapsed(lsft_timer) < timer_threshold) {
-        SEND_STRING("]");
+		SEND_STRING(SS_TAP(X_UP) SS_DOWN(X_LGUI) SS_TAP(X_RIGHT) SS_UP(X_LGUI) SS_TAP(X_ENTER) SS_TAP(X_TAB));
       }
     }
     return false;
