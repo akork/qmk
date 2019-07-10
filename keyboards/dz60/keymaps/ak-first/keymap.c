@@ -590,7 +590,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 #define _RSRU LT(LRSFTRU, KC_LBRC)
 #define _ENT_ LT(ENTMETA, KC_ENT)
 #define _RUENT_ LT(RUENTMETA, KC_ENT)
-#define _TAB__ LT(TABMETA, KC_TAB)
+#define _TAB__ LT(TABMETA, _RT)
 #define _QM__ LT(QMETA, KC_Q)
 #define _QMRU__ LT(QMETA, KC_DOT)
 #define _QMWIN LT(QMETAWIN, KC_Q)
@@ -611,12 +611,12 @@ void keyboard_post_init_user(void) {
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
   {
    LAYOUT
-   (TEST,             S(_1),   _ESC,    _RT,     _TAB__,  S(_5),   _______, S(_7),   _MIN,    S(_9),   _COM,    _LBR,    _VUP,    _NO,     _BSP,
+   (TEST,             S(_1),   _ESC,    _TAB,    _TAB__,  S(_5),   _______, S(_7),   _MIN,    S(_9),   _COM,    _LBR,    _VUP,    _NO,     _BSP,
     LSFT,             _Y,      _ENT_,   _O,      _DOT,    _U,               _Z,      _G,      _C,      _R,      _F,      RSFT,    _SLS,    EENTER,
     NMETA,            _I,      _A,      _E,      _QM__,   _L,               _D,      _HM__,   _T,      _N,      _S,      _B,               _SPC,
     LCTL,    _A,     _BSL,     S(_5),   _J,      _K,      _QUO,             _P,      _M,      _W,      _V,      _X,               _RC__,   RGB_TOG,
     _LC_,                      _LGUI,   _LALT,            _SPC,    MACMETA, RCMD,             RALT,    _VDN,             _VUP,    _DOW,    _UP),
-
+   
    LAYOUT
    (_M,               S(_1),   _ESC,    _RT,     _TAB__,  S(_5),   _______, S(_7),   _MIN,    S(_9),   S(_0),   _VDN,    _VUP,    _NO,     _BSP,
     LSFT,             _Y,      _ENT_,   _O,      _DOT,    _U,               _Z,      _G,      _C,      _R,      _F,      _RS__,   _SLS,    _BSL,
