@@ -611,14 +611,14 @@ void keyboard_post_init_user(void) {
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
   {
    LAYOUT
-   (TEST,             S(_1),   _ESC,    _BSP,    _TAB__,  S(_5),   _______, S(_7),   _MIN,    S(_9),   _COM,    _LBR,    _VUP,    _NO,     _BSP,
+   (TEST,             S(_1),   _ESC,    _RT,     _TAB__,  S(_5),   _______, S(_7),   _MIN,    S(_9),   _COM,    _LBR,    _VUP,    _NO,     _BSP,
     LSFT,             _Y,      _ENT_,   _O,      _DOT,    _U,               _Z,      _G,      _C,      _R,      _F,      RSFT,    _SLS,    EENTER,
     NMETA,            _I,      _A,      _E,      _QM__,   _L,               _D,      _HM__,   _T,      _N,      _S,      _B,               _SPC,
     LCTL,    _A,     _BSL,     S(_5),   _J,      _K,      _QUO,             _P,      _M,      _W,      _V,      _X,               _RC__,   RGB_TOG,
     _LC_,                      _LGUI,   _LALT,            _SPC,    MACMETA, RCMD,             RALT,    _VDN,             _VUP,    _DOW,    _UP),
 
    LAYOUT
-   (_M,               S(_1),   _ESC,    _BSP,    _TAB__,  S(_5),   _______, S(_7),   _MIN,    S(_9),   S(_0),   _VDN,    _VUP,    _NO,     _BSP,
+   (_M,               S(_1),   _ESC,    _RT,     _TAB__,  S(_5),   _______, S(_7),   _MIN,    S(_9),   S(_0),   _VDN,    _VUP,    _NO,     _BSP,
     LSFT,             _Y,      _ENT_,   _O,      _DOT,    _U,               _Z,      _G,      _C,      _R,      _F,      _RS__,   _SLS,    _BSL,
     NMETA,            _I,      _A,      _E,      _QMWIN,  _L,               _D,      _HM__,   _T,      _N,      _S,      _B,               _SPC,
     LCTL,    _NO,     _BSL,    S(_5),   _J,      _K,      _QUO,             _P,      _M,      _W,      _V,      _X,               _RC__,   _NO,
@@ -669,7 +669,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
    LAYOUT // -eMETA 10
    (_______,          _______, _______, _______, _______, _______, _______, _______,A(_BSP),  S(_LBR), _______, _______, _______, _______, _______,
     _______,          A(_D),   _______, _ESC,    C(S(_MIN)),_______,        _______, _PGDN,   _DN,     _UP,     _PGUP,   S(_RBR), _______, _______,
-    _______,          C(_K),   C(_D),   A(_U),   _______, _______,          G(_LT),  _BSP,    _RT,     A(_RT),  G(_RT),  M0_CK,            _______,
+    _______,          C(_K),   C(_D),   A(_U),   _______, _______,          G(_LT),  _BSP,    _RT,     A(_RT),  G(_RT),  G(_BSP),          _______,
     _______, _______, _______, _______, _______, _______, _______,          A(_LT),  _LT,     A(_W),   CTA(_Y), A(_M),            A(_BSL), _______,
     _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
 
@@ -717,7 +717,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 
     _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
 
-   LAYOUT // -TAB (4META)
+                   
+   LAYOUT // -TAB (4META )
    (_______,          _______, _______, _______, _______, _______, _______, _______, _______, CX_CF,   CX_F,    CX_3,    CX_RBRC, _______,  CXCJ_0,
     _______,          _______, _______, _______, _______, _______,          CX_Z,    CX_G,    CX_O,    CX_1,    CX_0,    CX_0,    _______, CX_LBRC,
     _______,          CXCJ_I,  _______, _______, _______, A(S(_1)),         A(S(_SCLN)),A(_X),S(_F10), MF12,    CX_1,    CXCJ_I,           _______,
