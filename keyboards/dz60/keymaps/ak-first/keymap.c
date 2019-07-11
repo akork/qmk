@@ -57,8 +57,8 @@ enum custom_keycodes {
                       CXCJ_T,
                       CXCJ_CT,
                       CXCJ_MT,
-                      CXCJ_P,
-                      CXCJ_CP,
+                      CX_P,
+                      CX_CP,
                       CX_LBRC,
                       CX_RBRC,
                       COM_MIN,
@@ -447,11 +447,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     case CXCJ_MT:
       SEND_STRING(SS_LCTRL("xj") SS_LALT("t"));
       return false;
-    case CXCJ_P:
-      SEND_STRING(SS_LCTRL("xj") "p");
+    case CX_P:
+      SEND_STRING(SS_LCTRL("x") "p");
       return false;
-    case CXCJ_CP:
-      SEND_STRING(SS_LCTRL("xjp"));
+    case CX_CP:
+      SEND_STRING(SS_LCTRL("xp"));
       return false;
     case CX_RBRC:
       SEND_STRING(SS_LCTRL("x")"}");
@@ -705,7 +705,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
    LAYOUT // -META
    (DF(1),            _______, KC_F17,  KC_F18,  _______, _______, _______, _______, G(_LBR), C(S(_TAB)),C(_TAB),G(_W),  G(_Z),  _______, _______,
     WIN,              _______,G(_ENT),  _______, KC_F15,  _______,          G(_R),   ALTTAB,  SCMDTAB, CMDTAB,  SALTTAB, G(_RBR),  _______,_______,
-    _______,          _______, CXCJ_P,  CXCJ_CP, GACS(_SPC),_______,        G(_L),   GUA(_DN),G(_C),   G(_V),   G(_A),   GQ,            _______,
+    _______,          _______, CX_P,    CX_CP, GACS(_SPC),_______,          G(_L),   GUA(_DN),G(_C),   G(_V),   G(_A),   GQ,            _______,
     _______, _______, _______, _______, _______, _______, _______,          _______, G(_C),   _______, _______, _______,          _______, _______,
     _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
 
