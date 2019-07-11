@@ -68,6 +68,7 @@ enum custom_keycodes {
                       BRACES,
                       BRACKS,
                       MF12,
+					  GBSP,
 };
 
 enum {
@@ -477,6 +478,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     case BRACES:
       SEND_STRING("{}" SS_TAP(X_LEFT));
       return false;
+    case GBSP:
+      SEND_STRING(SS_DOWN(X_LGUI) SS_TAP(X_BSPACE) SS_UP(X_LGUI));
+      return false;
     case GQ:
       register_code(KC_LGUI);
       register_code(KC_Q);
@@ -669,7 +673,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
    LAYOUT // -eMETA 10
    (_______,          _______, _______, _______, _______, _______, _______, _______,A(_BSP),  S(_LBR), _______, _______, _______, _______, _______,
     _______,          A(_D),   _______, _ESC,    C(S(_MIN)),_______,        _______, _PGDN,   _DN,     _UP,     _PGUP,   S(_RBR), _______, _______,
-    _______,          C(_K),   C(_D),   A(_U),   _______, _______,          G(_LT),  _BSP,    _RT,     A(_RT),  G(_RT),  G(_BSP),          _______,
+    _______,          C(_K),   C(_D),   A(_U),   _______, _______,          G(_LT),  _BSP,    _RT,     A(_RT),  G(_RT),  GBSP,             _______,
     _______, _______, _______, _______, _______, _______, _______,          A(_LT),  _LT,     A(_W),   CTA(_Y), A(_M),            A(_BSL), _______,
     _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
 
