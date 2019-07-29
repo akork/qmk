@@ -544,6 +544,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 #define _Y KC_Y
 #define _Z KC_Z
 
+#define _F6 KC_F6
 #define _F10 KC_F10
 #define _F10 KC_F10
 
