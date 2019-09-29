@@ -49,10 +49,10 @@ enum custom_keycodes {
                       M0_CK,
                       CXCJ_0,
                       CXCJ_B,
-                      CXCJ_I,
                       CXCJ_CC,
                       CXCJ_D,
                       CXCJ_CD,
+                      CXCJ_SD,
                       CXCJ_MD,
                       CXCJ_T,
                       CXCJ_CT,
@@ -424,9 +424,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     case CXCJ_B:
       SEND_STRING(SS_LCTRL("xj") "b");
       return false;
-    case CXCJ_I:
-      SEND_STRING(SS_LCTRL("xj") "i");
-      return false;
     case CXCJ_CC:
       SEND_STRING(SS_LCTRL("xjc"));
       return false;
@@ -435,6 +432,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       return false;
     case CXCJ_CD:
       SEND_STRING(SS_LCTRL("xjd"));
+      return false;
+    case CXCJ_SD:
+      SEND_STRING(SS_LCTRL("xj") "D");
       return false;
     case CXCJ_MD:
       SEND_STRING(SS_LCTRL("xj") SS_LALT("d"));
@@ -544,6 +544,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 #define _Y KC_Y
 #define _Z KC_Z
 
+#define _F2 KC_F2
 #define _F6 KC_F6
 #define _F10 KC_F10
 #define _F10 KC_F10
@@ -616,7 +617,7 @@ void keyboard_post_init_user(void) {
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
   {
    LAYOUT
-   (TEST,             S(_1),   _ESC,    _TAB,    _TAB__,  S(_5),   _______, S(_7),   _MIN,    S(_9),   _COM,    _LBR,    _VUP,    _NO,     _BSP,
+   (_F2,              S(_1),   _ESC,    _TAB,    _TAB__,  S(_5),   _______, S(_7),   _MIN,    S(_9),   _COM,    _LBR,    _VUP,    _NO,     _BSP,
     LSFT,             _Y,      _ENT_,   _O,      _DOT,    _U,               _Z,      _G,      _C,      _R,      _F,      RSFT,    _SLS,    EENTER,
     NMETA,            _I,      _A,      _E,      _QM__,   _L,               _D,      _HM__,   _T,      _N,      _S,      _B,               _SPC,
     LCTL,    _A,     _BSL,     S(_5),   _J,      _K,      _QUO,             _P,      _M,      _W,      _V,      _X,               _RC__,   RGB_TOG,
@@ -651,7 +652,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
     _______,                   _______, _______,          _______, S(_SPC), _______,          _______, _______,          _______, _______, _______),
 
    LAYOUT // -sMETA
-   (_______,          _______, _______, _______, _______, _______, _______, _______, _______, S(_GRV), _GRV,   _______,  _______, _______, _______,
+   (_______,          _______, _______, _______, _______, _______, _______, _LBR,    _______, S(_GRV), _GRV,    _RBR,    _______, _______, _______,
     _______,          _______, _______,G(_ENT),  _______, _______,          S(_6),   S(_COM), _EQL,    S(_QUO), S(_DOT), S(_7),   _______, EEENTER,
     _______,          S(_2),   _______, _______, _______, S(_1),            _SCLN,   S(_SCLN), S(_8),  S(_EQL), S(_4),   S(_3),            _______,
     _______, _______, _______, _______, _______, _______, _______,          LCTL(_R),CTA(_S), LCTL(_W),LCTL(_S),S(_SLS),          _______, _______,
@@ -674,7 +675,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
    LAYOUT // -eMETA 10
    (_______,          _______, _______, _______, _______, _______, _______, S(_LBR), A(_BSP), _______, BRACES,  S(_RBR),_______, _______, _______,
     _______,          C(_K),   _______, G(_Z),   GBSP,    _______,          EENTER,  _PGDN,   _DN,     _UP,     _PGUP,   S(_RBR), _______, _______,
-    _______,          EENTER,  G(_D),   A(_U),   _______, _______,          G(_LT),  _BSP,    _RT,     A(_RT),  G(_RT),  A(_D),            _______,
+    _______,          G(_SLS), G(_D),   A(_U),   _______, _______,          G(_LT),  _BSP,    _RT,     A(_RT),  G(_RT),  A(_D),            _______,
     _______, _______, _______, _______, _______, _______, _______,          A(_LT),  _LT,     A(_W),   CTA(_Y), A(_M),            A(_BSL), _______,
     _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
 
@@ -687,8 +688,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 
 
    LAYOUT // -hMETA
-   (G(_SPC),          _______, PARENS,  _______, _______, _______, _______, _______, BRACES,  PARENS, BRACKS,   EENTER,  _______, _______, _______,
-    EENTER,           _______, _______, _______, _______, _______,          _______, _______, _ESC,   _______,  C(_G),   _______, _______, _______,
+   (G(_SPC),          _______, PARENS,  _______, _______, _______, _______, _______, BRACES,  PARENS,  BRACKS,   EENTER,  _______, _______, _______,
+    EENTER,           _______, _______, _______, _______, _______,          _______, _______, G(_SLS), _______,  C(_G),   _______, _______, _______,
     _______,          _______, _______, _______, LSWITCH, _______,          _______, _______, _______, _______, _______, _______,          _______,
     _______, _______, _______, _______, _______, _______, _______,          _______, _______, CXCS,    CXCS_CXE,CXCS_CZ, CXCS_CXCC,_______,
     _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
@@ -726,8 +727,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
    LAYOUT // -TAB (4META )
    (_______,          _______, _______, _______, _______, _______, _______, _______, _______, CX_CF,   CX_F,    CX_3,    CX_RBRC, _______,  CXCJ_0,
     _______,          _______, _______, _______, _______, S(_F6),           CX_Z,    CX_G,    CX_O,    CX_1,    CX_0,    CX_0,    _______, CX_LBRC,
-    _______,          CXCJ_I,  _______, _______, _______, A(S(_1)),         A(S(_SCLN)),A(_X),S(_F10), MF12,    CX_1,    CXCJ_I,           _______,
-    _______, _______, _______, _______, _______, _______, _______,          C(A(S(_5))),CXCJ_D,CXCJ_CD,CXCJ_CC, _______,          CX_CC,   _______,
+    _______,          _______, _______, _______, _______, A(S(_1)),         A(S(_SCLN)),A(_X),S(_F10), MF12,    CX_1,    S(A(_F10)),       _______,
+    _______, _______, _______, _______, _______, _______, _______,          C(A(S(_5))),CXCJ_D,CXCJ_CD,CXCJ_CC, CXCJ_SD, CX_CC,   _______,
     _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, RGB_HUI, RGB_HUD),
 
   };
