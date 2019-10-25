@@ -1,5 +1,8 @@
 // -*- compile-command: "make dz60:ak-first:dfu" -*-
 
+
+// option + f12 terminal
+
 #include QMK_KEYBOARD_H
 
 #define MODS_CTRL_MASK  (MOD_BIT(KC_LSHIFT)|MOD_BIT(KC_RSHIFT))
@@ -8,8 +11,10 @@
 
 enum custom_keycodes {
 					  TEST = SAFE_RANGE,
+					  OSLSM,
                       MAC,
                       WIN,
+					  TABMETA,
                       NMETA,
                       MACMETA,
                       WINMETA,
@@ -43,6 +48,7 @@ enum custom_keycodes {
                       CX_CF,
                       CX_O,
                       CX_B,
+                      CX_K,
                       CX_0,
                       CX_1,
                       CX_3,
@@ -69,6 +75,10 @@ enum custom_keycodes {
                       BRACKS,
                       MF12,
 					  GBSP,
+					  CCS, // complete current statement
+					  CCSNLC,  // semicolon space
+					  ENDL,
+					  
 };
 
 enum {
@@ -87,7 +97,7 @@ enum {
       RCMETA,
       MACMETAL,
       WINMETAL,
-      TABMETA,
+      TABMETAL,
       RCMDL,
       LCMDL,
 };
@@ -119,9 +129,13 @@ void unregister_cmd_after_cmdtab(void) {
   }
 };
 
-static uint16_t timer, rcmd_timer, lctl_timer, lsft_timer, rsft_timer;
+static uint16_t timer, rcmd_timer, lctl_timer, lsft_timer, rsft_timer, tabmeta_timer, oslsm_timer;
 static const uint16_t timer_threshold = 250;
+static const uint16_t oneshot_threshold = 1000;
 static uint8_t rgblight_mode_current = RGBLIGHT_MODE_KNIGHT + 1;
+static uint8_t tabmeta_flag = 0;
+static uint8_t oslsm_pressed = 0;
+static uint8_t oslsm_another_pressed = 0;
 
 void increase_timer(void) {
   uint8_t layer = biton32(layer_state);
@@ -129,6 +143,25 @@ void increase_timer(void) {
 }
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+  if (keycode != TABMETA) {
+	tabmeta_flag = 0;
+  }
+
+  if (ENTMETA == biton32(layer_state)) {
+	  if ((oslsm_pressed == 0) && keycode != OSLSM &&
+		  timer_elapsed(oslsm_timer) > oneshot_threshold) {
+		  layer_off(ENTMETA);
+	  }
+	  if (oslsm_pressed == 0 && keycode != OSLSM) {
+		  if (record->event.pressed == false) {
+			  layer_off(ENTMETA);
+		  }
+	  }
+	  if (keycode != OSLSM)
+		  oslsm_another_pressed = 1;
+
+  }
+  
   /* unregiterCmdAfterCMDTAB(); */
   if (record->event.pressed) {
     if (keycode != MACMETA) increase_timer();
@@ -139,7 +172,22 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     if (keycode != RSFT)
       rsft_timer += 2 * timer_threshold;
   }
+  
   switch(keycode) {
+  case OSLSM:
+	  if (record->event.pressed) {
+		  oslsm_timer = timer_read();
+		  oslsm_pressed = 1;
+		  oslsm_another_pressed = 0;
+		  layer_on(ENTMETA);
+		  /* set_oneshot_layer(ENTMETA, ONESHOT_START); */
+	  } else {
+		  oslsm_pressed = 0;
+		  if (oslsm_another_pressed)
+			  layer_off(ENTMETA);
+		  /* set_oneshot_layer(ENTMETA, ONESHOT_PRESSED); */
+	  }
+	  return false;
   case TEST:
 	rgblight_mode_noeeprom(rgblight_mode_current++); // sets mode to Fast breathing without saving
 	return false;
@@ -150,8 +198,8 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     } else {
       layer_off(MACMETAL);
       if (timer_elapsed(timer) < timer_threshold) {
-        register_code(KC_SPACE);
-        unregister_code(KC_SPACE);
+        register_code(KC_ENTER);
+        unregister_code(KC_ENTER);
       }
       unregister_code(KC_LGUI);
       unregister_code(KC_LALT);
@@ -298,6 +346,29 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   }
 
   switch (keycode) {
+  case TABMETA:
+    if (record->event.pressed) {
+	  if (timer_elapsed(tabmeta_timer) < timer_threshold) {
+		send_string(SS_TAP(X_ENTER) SS_TAP(X_UP) SS_DOWN(X_LGUI) SS_TAP(X_RIGHT) SS_UP(X_LGUI) SS_TAP(X_ENTER) SS_TAP(X_TAB));
+		tabmeta_flag = 1;
+	  } else {
+		layer_on(TABMETAL);
+		tabmeta_timer = timer_read();
+	  }
+    } else {
+	  layer_off(TABMETAL);
+	  /* if (tabmeta_flag == 0) { */
+	  /* 	layer_off(TABMETAL); */
+	  /* } else { */
+	  /* 	tabmeta_timer = timer_read(); */
+	  /* } */
+      if ((timer_elapsed(tabmeta_timer) < timer_threshold) && (tabmeta_flag == 0)) {
+        SEND_STRING("{}" SS_TAP(X_LEFT));
+		tabmeta_timer = timer_read();
+      }
+	  tabmeta_flag = 0;
+    }
+    return false;
   case NMETA:
     if (record->event.pressed) {
       layer_on(NMETAL);
@@ -305,7 +376,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     } else {
       layer_off(NMETAL);
       if (timer_elapsed(lsft_timer) < timer_threshold) {
-        SEND_STRING(SS_LCTRL("g"));
+        SEND_STRING(SS_TAP(X_TAB));
       }
     }
     return false;
@@ -316,7 +387,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     } else {
       unregister_code(KC_LSFT);
       if (timer_elapsed(lsft_timer) < timer_threshold) {
-		SEND_STRING(SS_TAP(X_UP) SS_DOWN(X_LGUI) SS_TAP(X_RIGHT) SS_UP(X_LGUI) SS_TAP(X_ENTER) SS_TAP(X_TAB));
+		SEND_STRING(" ");
       }
     }
     return false;
@@ -347,6 +418,17 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   // just macros:
   if (record->event.pressed) {
     switch (keycode) {
+    case ENDL:
+		SEND_STRING(SS_DOWN(X_LGUI) SS_TAP(X_RIGHT) SS_UP(X_LGUI));
+      return false;
+    case CCSNLC:
+		if (ENTMETA == biton32(layer_state))
+			SEND_STRING(SS_DOWN(X_LGUI) SS_TAP(X_RIGHT) SS_UP(X_LGUI) ";");
+		SEND_STRING(SS_TAP(X_ENTER));
+		return false;
+    case CCS:
+		SEND_STRING(SS_DOWN(X_LGUI) SS_TAP(X_RIGHT) SS_UP(X_LGUI) ";" SS_TAP(X_ESCAPE));
+		return false;
     case ALTQUO:
       SEND_STRING(SS_LALT("`"));
       return false;
@@ -403,8 +485,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     case CX_O:
       SEND_STRING(SS_LCTRL("x") "o");
       return false;
-    case CX_B:
+	case CX_B:
       SEND_STRING(SS_LCTRL("x") "b");
+      return false;
+	case CX_K:
+      SEND_STRING(SS_LCTRL("x") "k");
       return false;
     case CX_0:
       SEND_STRING(SS_LCTRL("x") "0");
@@ -590,13 +675,12 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 #define _HOME KC_HOME
 #define _END KC_END
 
-#define _LS__ LT(LRSFT, KC_RBRC)
+#define _LS__ LT(LRSFT, _SPC)
 #define _LSRU LT(LRSFTRU, KC_RBRC)
 #define _RS__ LT(LRSFT, KC_LBRC)
 #define _RSRU LT(LRSFTRU, KC_LBRC)
 #define _ENT_ LT(ENTMETA, KC_ENT)
 #define _RUENT_ LT(RUENTMETA, KC_ENT)
-#define _TAB__ LT(TABMETA, _RT)
 #define _QM__ LT(QMETA, KC_Q)
 #define _QMRU__ LT(QMETA, KC_DOT)
 #define _QMWIN LT(QMETAWIN, KC_Q)
@@ -605,6 +689,14 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 #define _LC__ LCTL
 #define _RC__ C(A(_Y))
 #define _SPC__ LT(META, KC_SPC)
+#define _OSMSFT OSM(MOD_LSFT)
+#define _OSLSM OSL(ENTMETA)
+#define _OSLCM OSL(TABMETA)
+
+void matrix_scan_user(void) {
+	
+}
+
 
 void keyboard_post_init_user(void) {
   // Call the post init code.
@@ -614,17 +706,18 @@ void keyboard_post_init_user(void) {
   rgblight_disable_noeeprom();
 }
 
+
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
   {
-   LAYOUT
-   (_F2,              S(_1),   _ESC,    _TAB,    _TAB__,  S(_5),   _______, S(_7),   _MIN,    S(_9),   _COM,    _LBR,    _VUP,    _NO,     _BSP,
-    LSFT,             _Y,      _ENT_,   _O,      _DOT,    _U,               _Z,      _G,      _C,      _R,      _F,      RSFT,    _SLS,    EENTER,
-    NMETA,            _I,      _A,      _E,      _QM__,   _L,               _D,      _HM__,   _T,      _N,      _S,      _B,               _SPC,
-    LCTL,    _A,     _BSL,     S(_5),   _J,      _K,      _QUO,             _P,      _M,      _W,      _V,      _X,               _RC__,   RGB_TOG,
-    _LC_,                      _LGUI,   _LALT,            _SPC,    MACMETA, RCMD,             RALT,    _VDN,             _VUP,    _DOW,    _UP),
+   LAYOUT 
+   (_F2,              S(_1),   _ESC,    S(_MIN), TABMETA, S(_5),   _______, S(_EQL),  _EQL,    S(_9),   _COM,    _LBR,    _VUP,    _NO,     _BSP,
+    C(_G),            _Y,      OSLSM,   _O,      _DOT,    _U,               _Z,      _G,      _C,      _R,      _F,      RSFT,    _SLS,    EENTER,
+    NMETA,            _I,      _A,      _E,      _QM__,   _L,               _D,      _HM__,   _T,      _N,      _S,      _B,               _EQL,
+    _ENT,  _A,     _BSL,     S(_5),   _J,      _K,      _QUO,             _P,      _M,      _W,      _V,      _X,               _RC__,   _UP,
+    MACMETA,                     _LALT,   _LC_,            _SPC,   _OSMSFT, MACMETA, RCMD,             _VDN,             _VUP,    MACMETA, _SPC),
    
    LAYOUT
-   (_M,               S(_1),   _ESC,    _RT,     _TAB__,  S(_5),   _______, S(_7),   _MIN,    S(_9),   S(_0),   _VDN,    _VUP,    _NO,     _BSP,
+   (_M,               S(_1),   _ESC,    _RT,     TABMETA, S(_5),   _______, S(_7),   _MIN,    S(_9),   S(_0),   _VDN,    _VUP,    _NO,     _BSP,
     LSFT,             _Y,      _ENT_,   _O,      _DOT,    _U,               _Z,      _G,      _C,      _R,      _F,      _RS__,   _SLS,    _BSL,
     NMETA,            _I,      _A,      _E,      _QMWIN,  _L,               _D,      _HM__,   _T,      _N,      _S,      _B,               _SPC,
     LCTL,    _NO,     _BSL,    S(_5),   _J,      _K,      _QUO,             _P,      _M,      _W,      _V,      _X,               _RC__,   _NO,
@@ -638,7 +731,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
     _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
 
    LAYOUT // -rshift = 5
-   (_ESC,             _______, S(_MIN), S(_COM), _TAB__,  S(_5),   S(_CAP), S(_7),   COM_MIN, S(_9),   S(_0),   _______, S(_RBR), _NO,     S(_BSP),
+   (_ESC,             _______, S(_MIN), S(_COM), TABMETA, S(_5),   S(_CAP), S(_7),   COM_MIN, S(_9),   S(_0),   _______, S(_RBR), _NO,     S(_BSP),
     LBR_RBR_LFT,      S(_Y),   S(_ENT), S(_O),   S(_DOT), S(_U),            S(_Z),   S(_G),   S(_C),   S(_R),   S(_F),   _______, S(_SLS),S(_BSL),
     NMETA,            S(_I),   S(_A),   S(_E),   S(_Q),   S(_L),            S(_D),   S(_H),   S(_T),   S(_N),   S(_S),   S(_B),            S(_QUO),
     LCTL,   _NO,      S(_BSL), S(_5),   S(_J),   S(_K),   S(_QUO),          S(_P),   S(_M),   S(_W),   S(_V),   S(_X),            _RC__,   _NO,
@@ -653,10 +746,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 
    LAYOUT // -sMETA
    (_______,          _______, _______, _______, _______, _______, _______, _LBR,    _______, S(_GRV), _GRV,    _RBR,    _______, _______, _______,
-    _______,          _______, _______,G(_ENT),  _______, _______,          S(_6),   S(_COM), _EQL,    S(_QUO), S(_DOT), S(_7),   _______, EEENTER,
+    _______,          _______, CCS,     ENDL,    _______, _______,          S(_6),   S(_COM), _MIN,    S(_QUO), S(_DOT), S(_7),   _______, EEENTER,
     _______,          S(_2),   _______, _______, _______, S(_1),            _SCLN,   S(_SCLN), S(_8),  S(_EQL), S(_4),   S(_3),            _______,
     _______, _______, _______, _______, _______, _______, _______,          LCTL(_R),CTA(_S), LCTL(_W),LCTL(_S),S(_SLS),          _______, _______,
-    _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
+    _______,                   _______, _______,          _______, _______, CCSNLC,          _______, _______,          _______, _______, _______),
 
    LAYOUT // -RUENTMETA_
    (_______,          _______, _______, _______, _______, _______, _______, _______, _______, S(_GRV), _GRV,    _______,  _______, _______, _______,
@@ -676,7 +769,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
    (_______,          _______, _______, _______, _______, _______, _______, S(_LBR), A(_BSP), _______, BRACES,  S(_RBR),_______, _______, _______,
     _______,          C(_K),   _______, G(_Z),   GBSP,    _______,          EENTER,  _PGDN,   _DN,     _UP,     _PGUP,   S(_RBR), _______, _______,
     _______,          G(_SLS), G(_D),   A(_U),   _______, _______,          G(_LT),  _BSP,    _RT,     A(_RT),  G(_RT),  A(_D),            _______,
-    _______, _______, _______, _______, _______, _______, _______,          A(_LT),  _LT,     A(_W),   CTA(_Y), A(_M),            A(_BSL), _______,
+    _______, _______, G(_Y),   _______, _______, _______, _______,          A(_LT),  _LT,     A(_W),   CTA(_Y), A(_M),            A(_BSL), _______,
     _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
 
    LAYOUT // -eMetaWin
@@ -695,7 +788,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
     _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
 
    LAYOUT // -LCMETA
-   (_______,          _______, S(_MIN), _COM,    _TAB__,  S(_5),   _CAP,    S(_7),   C(_MIN), S(_9),   S(_0),   C(_LBR), C(_RBR), _NO,     C(_BSP),
+   (_______,          _______, S(_MIN), _COM,    TABMETA, S(_5),   _CAP,    S(_7),   C(_MIN), S(_9),   S(_0),   C(_LBR), C(_RBR), _NO,     C(_BSP),
     _LS__,            C(_Y),   _ENT_,   C(_O),   C(_DOT),  C(_U),           C(_Z),   C(_G),   C(_C),   C(_R),   C(_F),   _RS__,   _SLS,    _BSL,
     NMETA,            C(_I),   C(_A),   C(_E),   C(_Q),   C(_L),            C(_X),   C(_H),   C(_T),   C(_N),   C(_S),   C(_B),            C(_QUO),
     LCTL,    _NO,     _BSL,    S(_5),   C(_J),   C(_K),   C(_QUO),          C(_P),   C(_M),   C(_W),   C(_V),   C(_X),            _RC__,   _NO,
@@ -712,7 +805,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
    (DF(1),            _______, KC_F17,  KC_F18,  _______, _______, _______, _______, G(_LBR), C(S(_TAB)),C(_TAB),G(_W),  G(_Z),   _______, _______,
     WIN,              _______,G(_ENT),  _______, KC_F15,  _______,          G(_R),   G(_GRV), SCMDTAB, CMDTAB,  SALTTAB, G(_RBR),  _______,_______,
     _______,          _______, CX_P,    CX_CP, GACS(_SPC),_______,          G(_L),   GUA(_DN),G(_C),   G(_V),   G(_A),   GQ,               _______,
-    _______, _______, _______, _______, _______, _______, _______,          _______, G(_C),   _______, _______, _______,          _______, _______,
+    _______, _______, _______, _______, _______, _______, _______,          _______, G(_C),   _______, _______, _______,          _______, RGB_TOG,
     _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
 
    LAYOUT // -WINMETA 
@@ -725,9 +818,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 
                    
    LAYOUT // -TAB (4META )
-   (_______,          _______, _______, _______, _______, _______, _______, _______, _______, CX_CF,   CX_F,    CX_3,    CX_RBRC, _______,  CXCJ_0,
-    _______,          _______, _______, _______, _______, S(_F6),           CX_Z,    CX_G,    CX_O,    CX_1,    CX_0,    CX_0,    _______, CX_LBRC,
-    _______,          _______, _______, _______, _______, A(S(_1)),         A(S(_SCLN)),A(_X),S(_F10), MF12,    CX_1,    S(A(_F10)),       _______,
+   (_______,          _______, _______, _______, _______, _______, _______, _______, CX_K,    CX_CF,   CX_B,    CX_3,    CX_RBRC, _______, CXCJ_0,
+    _______,          _______, _______, _______, _______, S(_F6),           CX_0,    CX_G,    CX_O,    CX_1,    CX_0,    CX_0,    _______, CX_LBRC,
+    _______,          _______, _______, _______, _______, A(S(_1)),         A(S(_SCLN)),A(_X),S(_F10), CX_Z,    CX_1,    S(A(_F10)),       _______,
     _______, _______, _______, _______, _______, _______, _______,          C(A(S(_5))),CXCJ_D,CXCJ_CD,CXCJ_CC, CXCJ_SD, CX_CC,   _______,
     _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, RGB_HUI, RGB_HUD),
 
