@@ -12,6 +12,7 @@
 enum custom_keycodes {
 					  TEST = SAFE_RANGE,
 					  OSLSM,
+					  LGUI,
                       MAC,
                       WIN,
 					  TABMETA,
@@ -78,6 +79,11 @@ enum custom_keycodes {
 					  CCS, // complete current statement
 					  CCSNLC,  // semicolon space
 					  ENDL,
+					  RT,
+					  H_A,
+					  H_B,
+					  H_C,
+					  H_D,
 					  
 };
 
@@ -87,7 +93,7 @@ enum {
       RU,
       LRSFT,
       LRSFTRU,
-      ENTMETA,
+      SMETAL,
       RUENTMETA,
       NMETAL,
       QMETA,
@@ -147,20 +153,26 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 	tabmeta_flag = 0;
   }
 
-  if (ENTMETA == biton32(layer_state)) {
+  // OSL SMETAL
+  if (SMETAL == biton32(layer_state)) {
 	  if ((oslsm_pressed == 0) && keycode != OSLSM &&
 		  timer_elapsed(oslsm_timer) > oneshot_threshold) {
-		  layer_off(ENTMETA);
-	  }
-	  if (oslsm_pressed == 0 && keycode != OSLSM) {
-		  if (record->event.pressed == false) {
-			  layer_off(ENTMETA);
-		  }
+		  layer_off(SMETAL);
+ 	  }
+	  /* if (oslsm_pressed == 0 && keycode != OSLSM) { */
+	  /* 	  if (record->event.pressed == false) { */
+	  /* 		  layer_off(SMETAL); */
+	  /* 	  } */
+	  /* } */
+	  if (oslsm_pressed == 0 && keycode != OSLSM &&
+		  oslsm_another_pressed == 1) {
+		  layer_off(SMETAL);
 	  }
 	  if (keycode != OSLSM)
+		  
 		  oslsm_another_pressed = 1;
 
-  }
+  } // END: OSL SMETAL
   
   /* unregiterCmdAfterCMDTAB(); */
   if (record->event.pressed) {
@@ -173,19 +185,31 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       rsft_timer += 2 * timer_threshold;
   }
   
+  // MODIFIERS:
   switch(keycode) {
   case OSLSM:
 	  if (record->event.pressed) {
 		  oslsm_timer = timer_read();
 		  oslsm_pressed = 1;
 		  oslsm_another_pressed = 0;
-		  layer_on(ENTMETA);
-		  /* set_oneshot_layer(ENTMETA, ONESHOT_START); */
+		  layer_on(SMETAL);
 	  } else {
 		  oslsm_pressed = 0;
 		  if (oslsm_another_pressed)
-			  layer_off(ENTMETA);
-		  /* set_oneshot_layer(ENTMETA, ONESHOT_PRESSED); */
+			  layer_off(SMETAL);
+	  }
+	  return false;
+  case LGUI:
+	  if (record->event.pressed) {
+		  timer = timer_read();
+		  register_code(KC_LGUI);
+	  } else {
+		  if (timer_elapsed(timer) < timer_threshold) {
+			  unregister_code(KC_LGUI);
+			  send_string(SS_LCTRL("g"));
+		  } else {
+			  unregister_code(KC_LGUI);
+		  }
 	  }
 	  return false;
   case TEST:
@@ -221,6 +245,79 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       /* clear_mods(); */
     }
     return false;
+
+  case TABMETA:
+	  if (record->event.pressed) {
+		  if (timer_elapsed(tabmeta_timer) < timer_threshold) {
+			  send_string(SS_TAP(X_ENTER) SS_TAP(X_UP) SS_DOWN(X_LGUI) SS_TAP(X_RIGHT) SS_UP(X_LGUI) SS_TAP(X_ENTER) SS_TAP(X_TAB));
+			  tabmeta_flag = 1;
+		  } else {
+			  layer_on(TABMETAL);
+			  tabmeta_timer = timer_read();
+		  }
+	  } else {
+		  layer_off(TABMETAL);
+		  /* if (tabmeta_flag == 0) { */
+		  /* 	layer_off(TABMETAL); */
+		  /* } else { */
+		  /* 	tabmeta_timer = timer_read(); */
+		  /* } */
+		  if ((timer_elapsed(tabmeta_timer) < timer_threshold) && (tabmeta_flag == 0)) {
+			  SEND_STRING("{}" SS_TAP(X_LEFT));
+			  tabmeta_timer = timer_read();
+		  }
+		  tabmeta_flag = 0;
+	  }
+	  return false;
+  case NMETA:
+	  if (record->event.pressed) {
+		  layer_on(NMETAL);
+		  lsft_timer = timer_read();
+	  } else {
+		  layer_off(NMETAL);
+		  if (timer_elapsed(lsft_timer) < timer_threshold) {
+			  SEND_STRING(SS_TAP(X_TAB));
+		  }
+	  }
+	  return false;
+  case LSFT:
+	  if (record->event.pressed) {
+		  register_code(KC_LSFT);
+		  lsft_timer = timer_read();
+	  } else {
+		  unregister_code(KC_LSFT);
+		  if (timer_elapsed(lsft_timer) < timer_threshold) {
+			  SEND_STRING(" ");
+		  }
+	  }
+	  return false;
+  case LCTL:
+	  if (record->event.pressed) {
+		  layer_on(LCMETA);
+		  lctl_timer = timer_read();
+	  } else {
+		  if (timer_elapsed(lctl_timer) < timer_threshold) {
+			  SEND_STRING("_");
+		  }
+		  layer_off(LCMETA);
+	  }
+	  return false;
+  case RSFT:
+	  if (record->event.pressed) {
+		  layer_on(LRSFT);
+		  rsft_timer = timer_read();
+	  } else {
+		  if (timer_elapsed(rsft_timer) < timer_threshold) {
+			  SEND_STRING(")");
+		  }
+		  layer_off(LRSFT);
+	  }
+	  return false;
+
+  } // end WINMETA MACMETA
+
+  // CMD-TAB like keycodes
+  switch(keycode) {
   case CMDTAB:
     if (record->event.pressed) {
       register_code(KC_LGUI);
@@ -254,10 +351,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     }
     return false;
   default:
-    unregister_cmd_after_cmdtab();
-  } // end WINMETA MACMETA
-
-    // RCMD & RALT doing smth usefull on single press:
+	  unregister_cmd_after_cmdtab();
+  } // END: CMD-TAB like keycodes
+  
+  // RCMD & RALT doing smth usefull on single press:
   switch(keycode) {
   case RCMD: // CXCJ_K_C[
     if (record->event.pressed) {
@@ -313,7 +410,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     return false;
   } // end RCMD RALT
 
-    // layers manipulating events:
+  // layers manipulating events (language switch here):
   if (record->event.pressed) {
     switch(keycode) {
     case MAC:
@@ -330,100 +427,30 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       SEND_STRING(SS_LGUI(" "));
       if (biton32(default_layer_state) == 0) {
         default_layer_set(1UL<<2);
-
-        //layer_set(2);
-        //layer_state = 0b00000000000000000000000000000100;
-        //rgblight_toggle();
       } else {
         default_layer_set(1UL<<0);
-        //layer_set(2);
-        //layer_state = 0b00000000000000000000000000000001;
       }
-      //layer_invert(RU);
-      //rgblight_toggle();
       return false;
     }
-  }
-
-  switch (keycode) {
-  case TABMETA:
-    if (record->event.pressed) {
-	  if (timer_elapsed(tabmeta_timer) < timer_threshold) {
-		send_string(SS_TAP(X_ENTER) SS_TAP(X_UP) SS_DOWN(X_LGUI) SS_TAP(X_RIGHT) SS_UP(X_LGUI) SS_TAP(X_ENTER) SS_TAP(X_TAB));
-		tabmeta_flag = 1;
-	  } else {
-		layer_on(TABMETAL);
-		tabmeta_timer = timer_read();
-	  }
-    } else {
-	  layer_off(TABMETAL);
-	  /* if (tabmeta_flag == 0) { */
-	  /* 	layer_off(TABMETAL); */
-	  /* } else { */
-	  /* 	tabmeta_timer = timer_read(); */
-	  /* } */
-      if ((timer_elapsed(tabmeta_timer) < timer_threshold) && (tabmeta_flag == 0)) {
-        SEND_STRING("{}" SS_TAP(X_LEFT));
-		tabmeta_timer = timer_read();
-      }
-	  tabmeta_flag = 0;
-    }
-    return false;
-  case NMETA:
-    if (record->event.pressed) {
-      layer_on(NMETAL);
-      lsft_timer = timer_read();
-    } else {
-      layer_off(NMETAL);
-      if (timer_elapsed(lsft_timer) < timer_threshold) {
-        SEND_STRING(SS_TAP(X_TAB));
-      }
-    }
-    return false;
-  case LSFT:
-    if (record->event.pressed) {
-      register_code(KC_LSFT);
-      lsft_timer = timer_read();
-    } else {
-      unregister_code(KC_LSFT);
-      if (timer_elapsed(lsft_timer) < timer_threshold) {
-		SEND_STRING(" ");
-      }
-    }
-    return false;
-  case LCTL:
-    if (record->event.pressed) {
-      layer_on(LCMETA);
-      lctl_timer = timer_read();
-    } else {
-      if (timer_elapsed(lctl_timer) < timer_threshold) {
-        SEND_STRING("_");
-      }
-      layer_off(LCMETA);
-    }
-    return false;
-  case RSFT:
-    if (record->event.pressed) {
-      layer_on(LRSFT);
-      rsft_timer = timer_read();
-    } else {
-      if (timer_elapsed(rsft_timer) < timer_threshold) {
-        SEND_STRING(")");
-      }
-      layer_off(LRSFT);
-    }
-    return false;
   }
 
   // just macros:
   if (record->event.pressed) {
     switch (keycode) {
+  
     case ENDL:
 		SEND_STRING(SS_DOWN(X_LGUI) SS_TAP(X_RIGHT) SS_UP(X_LGUI));
+		oslsm_another_pressed = 0;
+		oslsm_timer = timer_read();
       return false;
+    case RT:
+		SEND_STRING(SS_TAP(X_RIGHT));
+		oslsm_another_pressed = 0;
+		oslsm_timer = timer_read();
+		return false;
     case CCSNLC:
-		if (ENTMETA == biton32(layer_state))
-			SEND_STRING(SS_DOWN(X_LGUI) SS_TAP(X_RIGHT) SS_UP(X_LGUI) ";");
+		if (SMETAL == biton32(layer_state))
+		SEND_STRING(SS_DOWN(X_LGUI) SS_TAP(X_RIGHT) SS_UP(X_LGUI) ";");
 		SEND_STRING(SS_TAP(X_ENTER));
 		return false;
     case CCS:
@@ -675,11 +702,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 #define _HOME KC_HOME
 #define _END KC_END
 
-#define _LS__ LT(LRSFT, _SPC)
 #define _LSRU LT(LRSFTRU, KC_RBRC)
 #define _RS__ LT(LRSFT, KC_LBRC)
 #define _RSRU LT(LRSFTRU, KC_LBRC)
-#define _ENT_ LT(ENTMETA, KC_ENT)
+#define _ENT_ LT(SMETAL, KC_ENT)
 #define _RUENT_ LT(RUENTMETA, KC_ENT)
 #define _QM__ LT(QMETA, KC_Q)
 #define _QMRU__ LT(QMETA, KC_DOT)
@@ -690,7 +716,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 #define _RC__ C(A(_Y))
 #define _SPC__ LT(META, KC_SPC)
 #define _OSMSFT OSM(MOD_LSFT)
-#define _OSLSM OSL(ENTMETA)
+#define _OSLSM OSL(SMETAL)
 #define _OSLCM OSL(TABMETA)
 
 void matrix_scan_user(void) {
@@ -706,14 +732,13 @@ void keyboard_post_init_user(void) {
   rgblight_disable_noeeprom();
 }
 
-
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
   {
    LAYOUT 
    (_F2,              S(_1),   _ESC,    S(_MIN), TABMETA, S(_5),   _______, S(_EQL),  _EQL,    S(_9),   _COM,    _LBR,    _VUP,    _NO,     _BSP,
-    C(_G),            _Y,      OSLSM,   _O,      _DOT,    _U,               _Z,      _G,      _C,      _R,      _F,      RSFT,    _SLS,    EENTER,
+    LGUI,            _Y,       OSLSM,   _O,      _DOT,    _U,               _Z,      _G,      _C,      _R,      _F,      RSFT,    _SLS,    EENTER,
     NMETA,            _I,      _A,      _E,      _QM__,   _L,               _D,      _HM__,   _T,      _N,      _S,      _B,               _EQL,
-    _ENT,  _A,     _BSL,     S(_5),   _J,      _K,      _QUO,             _P,      _M,      _W,      _V,      _X,               _RC__,   _UP,
+    MACMETA,_A,      _BSL,       S(_2),   _J,      _K,      _QUO,             _P,      _M,      _W,      _V,      _X,               _RC__,   _UP,
     MACMETA,                     _LALT,   _LC_,            _SPC,   _OSMSFT, MACMETA, RCMD,             _VDN,             _VUP,    MACMETA, _SPC),
    
    LAYOUT
@@ -746,10 +771,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 
    LAYOUT // -sMETA
    (_______,          _______, _______, _______, _______, _______, _______, _LBR,    _______, S(_GRV), _GRV,    _RBR,    _______, _______, _______,
-    _______,          _______, CCS,     ENDL,    _______, _______,          S(_6),   S(_COM), _MIN,    S(_QUO), S(_DOT), S(_7),   _______, EEENTER,
-    _______,          S(_2),   _______, _______, _______, S(_1),            _SCLN,   S(_SCLN), S(_8),  S(_EQL), S(_4),   S(_3),            _______,
-    _______, _______, _______, _______, _______, _______, _______,          LCTL(_R),CTA(_S), LCTL(_W),LCTL(_S),S(_SLS),          _______, _______,
-    _______,                   _______, _______,          _______, _______, CCSNLC,          _______, _______,          _______, _______, _______),
+    _______,          _______, CCS,     ENDL,    _______, _______,          S(_6),   S(_COM), _MIN,   S(_QUO), S(_DOT), S(_7),   _______, EEENTER,
+    _______,          S(_2),   _______, _______, _______, S(_1),            S(_SCLN),   _SCLN, RT,  S(_EQL), ENDL,   S(_3),            _______,
+    _______, _______, _______, _______, _______, _______, _______,          LCTL(_R),CTA(_S), LCTL(_W),S(_8)   ,S(_SLS),          _______, _______,
+    _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
 
    LAYOUT // -RUENTMETA_
    (_______,          _______, _______, _______, _______, _______, _______, _______, _______, S(_GRV), _GRV,    _______,  _______, _______, _______,
@@ -779,17 +804,16 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
     _______, _______, _______, _______, _______, _______, _______,          C(_LT),  _LT,     A(_W),   CTA(_Y), A(_M),            A(_BSL), _______,
     _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
 
-
    LAYOUT // -hMETA
    (G(_SPC),          _______, PARENS,  _______, _______, _______, _______, _______, BRACES,  PARENS,  BRACKS,   EENTER,  _______, _______, _______,
     EENTER,           _______, _______, _______, _______, _______,          _______, _______, G(_SLS), _______,  C(_G),   _______, _______, _______,
-    _______,          _______, _______, _______, LSWITCH, _______,          _______, _______, _______, _______, _______, _______,          _______,
+    _______,          H_A,     _______, _______, LSWITCH, _______,          _______, _______, _______, _______, _______,  H_B,               _______,
     _______, _______, _______, _______, _______, _______, _______,          _______, _______, CXCS,    CXCS_CXE,CXCS_CZ, CXCS_CXCC,_______,
     _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
 
    LAYOUT // -LCMETA
    (_______,          _______, S(_MIN), _COM,    TABMETA, S(_5),   _CAP,    S(_7),   C(_MIN), S(_9),   S(_0),   C(_LBR), C(_RBR), _NO,     C(_BSP),
-    _LS__,            C(_Y),   _ENT_,   C(_O),   C(_DOT),  C(_U),           C(_Z),   C(_G),   C(_C),   C(_R),   C(_F),   _RS__,   _SLS,    _BSL,
+    _______,            C(_Y),   _ENT_,   C(_O),   C(_DOT),  C(_U),           C(_Z),   C(_G),   C(_C),   C(_R),   C(_F),   _RS__,   _SLS,    _BSL,
     NMETA,            C(_I),   C(_A),   C(_E),   C(_Q),   C(_L),            C(_X),   C(_H),   C(_T),   C(_N),   C(_S),   C(_B),            C(_QUO),
     LCTL,    _NO,     _BSL,    S(_5),   C(_J),   C(_K),   C(_QUO),          C(_P),   C(_M),   C(_W),   C(_V),   C(_X),            _RC__,   _NO,
     _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
