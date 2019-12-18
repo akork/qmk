@@ -11,6 +11,9 @@
 
 enum custom_keycodes {
 					  TEST = SAFE_RANGE,
+					  LT, RT, UP, DN, PUP, PDN, GLT, GRT, 
+					  BSP,
+					  SSHIFT,
 					  OSLSM,
 					  OSLEM,
 					  OSLBM,
@@ -84,7 +87,6 @@ enum custom_keycodes {
 					  CCS, // complete current statement
 					  CCSNLC,  // semicolon space
 					  ENDL,
-					  RT,
 					  H_A,
 					  H_B,
 					  H_C,
@@ -113,6 +115,115 @@ enum {
       RCMDL,
       LCMDL,
 };
+
+#define _LS_ KC_LSFT
+#define _RS_ KC_RSFT
+#define _LC_ KC_LCTL
+#define _RC_ KC_RCTL
+#define _LGUI KC_LGUI
+#define _RG_ KC_RGUI
+#define _LALT KC_LALT
+#define _RA_ KC_RALT
+
+#define TR KC_TRNS
+
+#define _U KC_U
+#define _1 KC_1
+#define _2 KC_2
+#define _3 KC_3
+#define _4 KC_4
+#define _5 KC_5
+#define _6 KC_6
+#define _7 KC_7
+#define _8 KC_8
+#define _9 KC_9
+#define _0 KC_0
+#define _A KC_A
+#define _B KC_B
+#define _C KC_C
+#define _D KC_D
+#define _E KC_E
+#define _F KC_F
+#define _G KC_G
+#define _H KC_H
+#define _I KC_I
+#define _J KC_J
+#define _K KC_K
+#define _L KC_L
+#define _M KC_M
+#define _N KC_N
+#define _O KC_O
+#define _P KC_P
+#define _Q KC_Q
+#define _R KC_R
+#define _S KC_S
+#define _T KC_T
+#define _U KC_U
+#define _V KC_V
+#define _W KC_W
+#define _X KC_X
+#define _Y KC_Y
+#define _Z KC_Z
+
+#define _F2 KC_F2
+#define _F6 KC_F6
+#define _F10 KC_F10
+#define _F10 KC_F10
+
+#define _RT KC_RGHT
+#define _LT KC_LEFT
+#define _UP KC_UP
+#define _DN KC_DOWN
+#define _VUP KC__VOLUP
+#define _VDN KC__VOLDOWN
+
+#define _CSL KC_BSLS
+#define _COM KC_COMM
+#define _MIN KC_MINS
+#define _TAB KC_TAB
+#define _TB KC_TAB
+#define _CAP KC_CAPS
+#define _LBR KC_LBRC
+#define _RBR KC_RBRC
+#define _NO KC_NO
+#define _BSP KC_BSPC
+#define _ESC KC_ESC
+#define _BSL KC_BSLS
+#define _SPC KC_SPC
+#define _DOT KC_DOT
+#define _SLS KC_SLSH
+#define _QUO KC_QUOT
+#define _ENT KC_ENT
+#define _DOW KC_DOWN
+#define _UP KC_UP
+#define _EQL KC_EQL
+#define _SCLN KC_SCLN
+#define _GRV KC_GRV
+#define CTA(x) LCTL(LALT(x))
+#define ALT(x) LALT(x)
+#define CTL(x) LCTL(x)
+#define GUI(x) LGUI(x)
+#define GUA(x) LGUI(LALT(x))
+#define ALG(x) LALT(LGUI(x))
+#define GACS(x) LGUI(LALT(LCTL(LSFT(x))))
+#define _PGUP KC_PGUP
+#define _PGDN KC_PGDN
+#define _HOME KC_HOME
+#define _END KC_END
+#define _DEL KC_DELETE
+
+#define _LSRU LT(LRSFTRU, KC_RBRC)
+#define _RS__ LT(LRSFT, KC_LBRC)
+#define _RSRU LT(LRSFTRU, KC_LBRC)
+#define _ENT_ LT(SMETAL, KC_ENT)
+#define _RUENT_ LT(RUENTMETA, KC_ENT)
+#define _HM__ LT(HMETAL, KC_H)
+#define _HMRU__ LT(HMETAL, KC_R)
+#define _LC__ LCTL
+#define _RC__ C(A(_Y))
+#define _SPC__ LT(META, KC_SPC)
+#define _OSMSFT OSM(MOD_LSFT)
+#define _OSLSM OSL(SMETAL)
 
 uint32_t default_layer_state_set_user(uint32_t state) {
   switch (biton32(state)) {
@@ -147,6 +258,7 @@ static const uint16_t oneshot_threshold = 1000;
 static uint8_t rgblight_mode_current = RGBLIGHT_MODE_KNIGHT + 1;
 static uint8_t oslsm_pressed = 0;
 static uint8_t oslem_pressed = 0;
+static uint8_t em_forced = 0;
 static uint8_t oslbm_pressed = 0;
 static uint8_t osltm_pressed = 0;
 static uint8_t oslsm_another_pressed = 0;
@@ -160,6 +272,14 @@ void increase_timer(void) {
 }
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+	if (em_forced == 1 && record->event.pressed && (
+			keycode == _BSP ||
+			keycode == G(_C))) {
+		/* layer_off(EMETAL); */
+		em_forced = 0;
+	    unregister_code(KC_LSHIFT);
+		return true;
+	}
   // OSL sMETAL
   if (SMETAL == biton32(layer_state)) {
 	  if ((oslsm_pressed == 0) && record->event.pressed &&
@@ -174,7 +294,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 		  oslsm_another_pressed = 1;
   } // END: OSL SMETAL
   // OSL eMETAL
-  if (EMETAL == biton32(layer_state)) {
+  if (EMETAL == biton32(layer_state) && !em_forced) {
   	  if ((oslem_pressed == 0) && record->event.pressed &&
   		  timer_elapsed(oslem_timer) > oneshot_threshold) {
   		  layer_off(EMETAL);
@@ -246,7 +366,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 		  layer_on(EMETAL);
 	  } else {
 		  oslem_pressed = 0;
-		  if (oslem_another_pressed)
+		  if (oslem_another_pressed && !em_forced)
 			  layer_off(EMETAL);
 	  }
 	  return false;
@@ -280,11 +400,28 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 		  register_code(KC_LGUI);
 	  } else {
 		  if (timer_elapsed(timer) < timer_threshold) {
+			  layer_off(EMETAL);
+			  em_forced = 0;
 			  unregister_code(KC_LGUI);
+			  unregister_code(KC_LSHIFT);
 			  send_string(SS_LCTRL("g"));
 		  } else {
 			  unregister_code(KC_LGUI);
 		  }
+	  }
+	  return false;
+  case BSP:
+	  if (record->event.pressed) {
+		  unregister_code(KC_LSHIFT);
+		  register_code(KC_BSPACE);
+		  unregister_code(KC_BSPACE);
+	  }
+	  return false;
+  case SSHIFT:
+	  if (record->event.pressed) {
+		  register_code(KC_LSHIFT);
+		  layer_on(EMETAL);
+		  em_forced = 1;
 	  }
 	  return false;
   case TEST:
@@ -501,17 +638,17 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   // just macros:
   if (record->event.pressed) {
     switch (keycode) {
-  
+	case RT:
+	  SEND_STRING(SS_TAP(X_RIGHT));
+      return false;
+    case LT:
+	  SEND_STRING(SS_TAP(X_LEFT));
+      return true;
     case ENDL:
 		SEND_STRING(SS_DOWN(X_LGUI) SS_TAP(X_RIGHT) SS_UP(X_LGUI));
 		oslsm_another_pressed = 0;
 		oslsm_timer = timer_read();
       return false;
-    case RT:
-		SEND_STRING(SS_TAP(X_RIGHT));
-		oslsm_another_pressed = 0;
-		oslsm_timer = timer_read();
-		return false;
     case CCSNLC:
 		if (SMETAL == biton32(layer_state))
 		SEND_STRING(SS_DOWN(X_LGUI) SS_TAP(X_RIGHT) SS_UP(X_LGUI) ";");
@@ -677,118 +814,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   return true;
 };
 
-#define _LS_ KC_LSFT
-#define _RS_ KC_RSFT
-#define _LC_ KC_LCTL
-#define _RC_ KC_RCTL
-#define _LGUI KC_LGUI
-#define _RG_ KC_RGUI
-#define _LALT KC_LALT
-#define _RA_ KC_RALT
-
-#define TR KC_TRNS
-
-#define _U KC_U
-#define _1 KC_1
-#define _2 KC_2
-#define _3 KC_3
-#define _4 KC_4
-#define _5 KC_5
-#define _6 KC_6
-#define _7 KC_7
-#define _8 KC_8
-#define _9 KC_9
-#define _0 KC_0
-#define _A KC_A
-#define _B KC_B
-#define _C KC_C
-#define _D KC_D
-#define _E KC_E
-#define _F KC_F
-#define _G KC_G
-#define _H KC_H
-#define _I KC_I
-#define _J KC_J
-#define _K KC_K
-#define _L KC_L
-#define _M KC_M
-#define _N KC_N
-#define _O KC_O
-#define _P KC_P
-#define _Q KC_Q
-#define _R KC_R
-#define _S KC_S
-#define _T KC_T
-#define _U KC_U
-#define _V KC_V
-#define _W KC_W
-#define _X KC_X
-#define _Y KC_Y
-#define _Z KC_Z
-
-#define _F2 KC_F2
-#define _F6 KC_F6
-#define _F10 KC_F10
-#define _F10 KC_F10
-
-#define _RT KC_RGHT
-#define _LT KC_LEFT
-#define _UP KC_UP
-#define _DN KC_DOWN
-#define _VUP KC__VOLUP
-#define _VDN KC__VOLDOWN
-
-#define _CSL KC_BSLS
-#define _COM KC_COMM
-#define _MIN KC_MINS
-#define _TAB KC_TAB
-#define _TB KC_TAB
-#define _CAP KC_CAPS
-#define _LBR KC_LBRC
-#define _RBR KC_RBRC
-#define _NO KC_NO
-#define _BSP KC_BSPC
-#define _ESC KC_ESC
-#define _BSL KC_BSLS
-#define _SPC KC_SPC
-#define _DOT KC_DOT
-#define _SLS KC_SLSH
-#define _QUO KC_QUOT
-#define _ENT KC_ENT
-#define _DOW KC_DOWN
-#define _UP KC_UP
-#define _EQL KC_EQL
-#define _SCLN KC_SCLN
-#define _GRV KC_GRV
-#define CTA(x) LCTL(LALT(x))
-#define ALT(x) LALT(x)
-#define CTL(x) LCTL(x)
-#define GUI(x) LGUI(x)
-#define GUA(x) LGUI(LALT(x))
-#define ALG(x) LALT(LGUI(x))
-#define GACS(x) LGUI(LALT(LCTL(LSFT(x))))
-#define _PGUP KC_PGUP
-#define _PGDN KC_PGDN
-#define _HOME KC_HOME
-#define _END KC_END
-#define _DEL KC_DELETE
-
-#define _LSRU LT(LRSFTRU, KC_RBRC)
-#define _RS__ LT(LRSFT, KC_LBRC)
-#define _RSRU LT(LRSFTRU, KC_LBRC)
-#define _ENT_ LT(SMETAL, KC_ENT)
-#define _RUENT_ LT(RUENTMETA, KC_ENT)
-#define _QM__ LT(EMETAL, KC_Q)
-#define _QMRU__ LT(EMETAL, KC_DOT)
-#define _QMWIN LT(EMETALWIN, KC_Q)
-#define _HM__ LT(HMETAL, KC_H)
-#define _HMRU__ LT(HMETAL, KC_R)
-#define _LC__ LCTL
-#define _RC__ C(A(_Y))
-#define _SPC__ LT(META, KC_SPC)
-#define _OSMSFT OSM(MOD_LSFT)
-#define _OSLSM OSL(SMETAL)
-
 void matrix_scan_user(void) {
 	
 }
@@ -805,8 +830,8 @@ void keyboard_post_init_user(void) {
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = 
   {
    LAYOUT
-   (_F2,              S(_1),   _ESC,    S(_MIN), OSLTM,   S(_5),   _______, S(_EQL),  _EQL,    S(_9),  OSLBM,   _LBR,    _VUP,    _NO,     _BSP,
-    LGUI,            _Y,       OSLSM,   _O,      _DOT,    _K,               _Z,      _G,      _C,      _R,      _F,      RSFT,    _SLS,    EENTER,
+   (_F2,              S(_1),   _ESC,    S(_MIN), OSLTM,   S(_5),   _______, S(_EQL),  _EQL,    _MIN,   OSLBM,   G(S(_4)),G(S(_3)),_NO,     S(_F10),
+    LGUI,            _Y,       OSLSM,   _O,      _DOT,    _K,               _Z,      _G,      _C,      _R,      _F,      RSFT,    _SLS,    S(A(_F10)),
     NMETA,            _I,      _A,      _E,      OSLEM,   _P,               _D,      _HM__,   _T,      _N,      _S,      _B,               _EQL,
     _Q,     _A,      _BSL,       S(_2),   _J,      _U,      _QUO,           _L,      _M,      _W,      _V,      _X,               _RC__,   _UP,
     MACMETA,                     _LALT,   _LC_,            _SPC,   _OSMSFT, MACMETA, RCMD,             _VDN,             _VUP,    MACMETA, _SPC),
@@ -839,17 +864,17 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
     _______, _______, S(_QUO), S(_I),   S(_SCLN),S(_M),   S(_S),            S(_G),   S(_V),   S(_D),   S(_X),   S(_A),            _______, _______,
     _______,                   _______, _______,          _______, S(_SPC), _______,          _______, _______,          _______, _______, _______),
 
-   LAYOUT // -sMETA
+   LAYOUT // smetal
    (_______,          _______, _______, _______, _______, _______, _______, _LBR,    _______, S(_GRV), _GRV,    _RBR,    _______, _______, _______,
     _______,          _______, CCS,     ENDL,    _______, _______,          S(_6),   S(_COM), _MIN,   S(_QUO), S(_DOT), S(_7),   _______, EEENTER,
-    _______,          S(_2),   _______, _______, _______, S(_1),            S(_SCLN),   _SCLN, RT,  S(_EQL), S(_4),   S(_3),            _______,
+    _______,          S(_2),   _______, _______, SSHIFT,  S(_1),            S(_SCLN),   _SCLN,_______,  S(_EQL), S(_4),   S(_3),            _______,
     _______, _______, _______, _______, _______, _______, _______,          LCTL(_R),CTA(_S), LCTL(_W),S(_8)   ,S(_SLS),          _______, _______,
-    _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
+    _______,                   _______, _______,          SSHIFT,  _______, _______,          _______, _______,          _______, _______, _______),
 
-   LAYOUT // -bMETAh
+   LAYOUT // -bmetal
    (_______,          _______, _______, S(_LBR), BRACES,  S(_RBR), _______, _LBR,    _______, MBRACES, _COM,    _RBR,    _______, _______, _______,
     _______,          _______, S(_9),   PARENS,   S(_0),  MBRACES,          S(_6),   S(_COM), _MIN,   S(_QUO), S(_DOT), S(_7),   _______,  EEENTER,
-    _______,          C(_ENT), _LBR,    BRACKS,  S(_ENT), _RBR,             G(_ENT), G(_ENT), RT,  S(_EQL), S(_4),   S(_3),               _______,
+    _______,          C(_ENT), _LBR,    BRACKS,  S(_ENT), _RBR,             G(_ENT), G(_ENT), _______,  S(_EQL), S(_4),   S(_3),               _______,
     _______, _______, _______, _______, _______, _______, _______,          LCTL(_R),CTA(_S), LCTL(_W),S(_8)   ,S(_SLS),          _______, _______,
     _______,                   _______, _______,          COM_SPC, _______, G(_ENT),          _______, _______,          _______, _______, _______),
 
@@ -867,11 +892,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
     _______, _______, _______, _______, _______, _______, _______,          _7,      _8,      _______, CC_PLS,  CC_MIN,  _______, _______,
     _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
 
-   LAYOUT // -eMETA 10
-   (_______,          _______, _______, _______, _______, _______, _______, S(_LBR), A(_BSP),C(G(_DN)),C(G(_UP)),C(_K),  _______, _______, _______,
-    _______,          C(_K),   _______, G(_Z),   GBSP,    _______,          C(_SPC), _PGDN,   _DN,     _UP,     _PGUP,   S(_RBR), _______, _______,
-    _______,          G(_SLS), G(S(_D)),A(_U),   _______, _______,          G(_LT),  _BSP,    _RT,     A(_RT),  G(_RT),  _DEL,             _______,
-    G(_X),   _______, C(S(_K)),_______, _______, _______, _______,          A(_LT),  _LT,     A(_W),   CTA(_Y), A(_M),            A(_BSL), _______,
+   LAYOUT // -emetal
+   (_______,          _______, _______, _______, _______, _______, _______, _BSP,    A(_BSP),C(G(_DN)),C(G(_UP)),C(_K),  _______, _______, _______,
+    _______,          C(_K),   _______, SSHIFT,  GBSP,    _______,          C(_SPC), _PGDN,   _DN,     _UP,     _PGUP,   S(_RBR), _______, _______,
+    _______,          G(S(_D)),G(_Z),   _BSP,    _______, _______,          G(_LT),  _BSP,    _RT,     A(_RT),  G(_RT),  _DEL,             _______,
+    G(_X),   _______, C(S(_K)),_______, A(_U),    _______, _______,          A(_LT),  _LT,     A(_W),   CTA(_Y), A(_M),            A(_BSL), _______,
     _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
 
    LAYOUT // -eMetaWin
@@ -917,8 +942,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 
     _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
 
-                   
-   LAYOUT // -TAB (4META )
+   LAYOUT // -tmetal
    (_______,          _______, _______, _______, MBRACES, _______, _______, _______, CX_K,    CX_CF,   CX_B,    CX_3,    CX_RBRC, _______, CXCJ_0,
     _______,          _______, _______, _______, _______, S(_F6),           CX_0,    CX_G,    CX_O,    CX_1,    CX_0,    CX_0,    _______, CX_LBRC,
     _______,          _______, _______, _______, _______, A(S(_1)),         A(S(_SCLN)),A(_X),S(_F10), CX_Z,    CX_1,    S(A(_F10)),       _______,
