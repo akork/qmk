@@ -16,6 +16,7 @@ enum custom_keycodes {
 					  BSP,
 					  SSHIFT,
 					  YANK,
+					  KILL,
 					  OSLSM,
 					  OSLEM,
 					  OSLBM,
@@ -85,6 +86,7 @@ enum custom_keycodes {
                       BRACES,
                       MBRACES,
                       BRACKS,
+					  QUOTES,
                       MF12, 
 					  GBSP,
 					  CCS, // complete current statement
@@ -121,14 +123,10 @@ enum {
       LCMDL,
 };
 
-#define _LS_ KC_LSFT
-#define _RS_ KC_RSFT
-#define _LC_ KC_LCTL
-#define _RC_ KC_RCTL
+#define _LSFT KC_LSFT
+#define _LCTL KC_LCTL
 #define _LGUI KC_LGUI
-#define _RG_ KC_RGUI
 #define _LALT KC_LALT
-#define _RA_ KC_RALT
 
 #define TR KC_TRNS
 
@@ -429,6 +427,14 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 		  em_forced = 1;
 	  }
 	  return false;
+  case KILL:
+	  if (record->event.pressed) {
+		  unregister_code(KC_LSHIFT);
+		  layer_off(EMETAL);
+		  em_forced = 0;
+		  send_string(SS_LGUI("x"));
+	  }
+	  return false;
   case YANK:
 	  if (record->event.pressed) {
 		  unregister_code(KC_LSHIFT);
@@ -670,6 +676,18 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 	case MBRACES:
 		SEND_STRING("{}" SS_TAP(X_LEFT) SS_TAP(X_ENTER) SS_TAP(X_UP) SS_DOWN(X_LGUI) SS_TAP(X_RIGHT) SS_UP(X_LGUI) SS_TAP(X_ENTER) SS_TAP(X_TAB));
       return false;
+    case BRACES:
+      SEND_STRING("{}" SS_TAP(X_LEFT));
+      return false;
+    case PARENS:
+      SEND_STRING("()" SS_TAP(X_LEFT));
+      return false;
+    case BRACKS:
+      SEND_STRING("[]" SS_TAP(X_LEFT));
+      return false;
+    case QUOTES:
+		SEND_STRING("\"\"" SS_TAP(X_LEFT));
+      return false;
     case ALTQUO:
       SEND_STRING(SS_LALT("`"));
       return false;
@@ -690,9 +708,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       return false;
     case CXCS_CXCC:
       SEND_STRING(SS_LCTRL("xsxc"));
-      return false;
-    case LBR_RBR_LFT:
-      SEND_STRING("[]" SS_TAP(X_LEFT));
       return false;
     case CX_CX:
 		SEND_STRING(SS_LCTRL("x") SS_LCTRL("x"));
@@ -778,21 +793,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     case COM_MIN:
       SEND_STRING(",-");
       return false;
-    case EENTER:
-      SEND_STRING(SS_TAP(X_UP) SS_DOWN(X_LGUI) SS_TAP(X_RIGHT) SS_UP(X_LGUI) SS_TAP(X_ENTER) SS_TAP(X_TAB));
-      return false;
-    case EEENTER:
-      SEND_STRING(SS_TAP(X_ENTER) SS_TAP(X_UP) SS_DOWN(X_LGUI) SS_TAP(X_RIGHT) SS_UP(X_LGUI) SS_TAP(X_ENTER) SS_TAP(X_TAB));
-      return false;
-    case PARENS:
-      SEND_STRING("()" SS_TAP(X_LEFT));
-      return false;
-    case BRACKS:
-      SEND_STRING("[]" SS_TAP(X_LEFT));
-      return false;
-    case BRACES:
-      SEND_STRING("{}" SS_TAP(X_LEFT));
-      return false;
     case GBSP:
       SEND_STRING(SS_DOWN(X_LGUI) SS_TAP(X_BSPACE) SS_UP(X_LGUI));
       return false;
@@ -829,18 +829,18 @@ void keyboard_post_init_user(void) {
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = 
   {
    LAYOUT
-   (_F2,              S(_1),   _ESC,    S(_MIN), OSLTM,   S(_5),   _______, S(_EQL),  _EQL,    _MIN,   OSLBM,   G(S(_4)),G(S(_3)),_NO,     S(_F10),
+   (_F2,              S(_F2),  _ESC,    S(_MIN), OSLTM,   S(_5),   _______, S(_EQL),  _EQL,    _MIN,   OSLBM,   G(S(_4)),G(S(_3)),_NO,     S(_F10),
     LGUI,             _Y,      OSLSM,   _O,      _DOT,    _K,               _Z,      _G,      _C,      _R,      _F,      RSFT,    _SLS,    S(A(_F10)),
     NMETA,            _I,      _A,      _E,      OSLEM,   _P,               _D,      _HM__,   _T,      _N,      _S,      _B,               _EQL,
     _Q,     _A,       _BSL,    S(_2),   _J,      _U,      _QUO,             _L,      _M,      _W,      _V,      _X,               _RC__,   _UP,
-    MACMETA,                   _LALT,   _LC_,             _SPC,   _OSMSFT, MACMETA, RCMD,             _VDN,             _VUP,    MACMETA, _SPC),
+    _LCTL,                     _LALT,   RALT,             _SPC,   _OSMSFT,  MACMETA, RCMD,             _VDN,             _VUP,    MACMETA, _SPC),
    
    LAYOUT
    (_M,               S(_1),   _ESC,    _RT,     OSLTM, S(_5),   _______, S(_7),   _MIN,    S(_9),   S(_0),   _VDN,    _VUP,    _NO,     _BSP,
     LSFT,             _Y,      _ENT_,   _O,      _DOT,    _U,               _Z,      _G,      _C,      _R,      _F,      _RS__,   _SLS,    _BSL,
     NMETA,            _I,      _A,      _E,      OSLEM,   _L,                _D,      _HM__,   _T,      _N,      _S,      _B,               _SPC,
     _Q,      _NO,     _BSL,    S(_5),   _J,      _K,      _QUO,             _P,      _M,      _W,      _V,      _X,               _RC__,   _NO,
-    _LC_,                      _LGUI,   _LALT,            _SPC,    WINMETA, RCMD,             RALT,    RALT,             _NO,     _DOW,    _UP),
+    _LCTL,                     _LGUI,   _LALT,            _SPC,    WINMETA, RCMD,             RALT,    RALT,             _NO,     _DOW,    _UP),
  
    LAYOUT // -RU
    (_______,          _______, _______ , _______, _______, _______, _RBR,    _______, _______, _______, S(_SLS), _______, _______, _______, _______,
@@ -854,7 +854,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
     LBR_RBR_LFT,      S(_Y),   S(_ENT), S(_O),   S(_DOT), S(_U),            S(_Z),   S(_G),   S(_C),   S(_R),   S(_F),   _______, S(_SLS),S(_BSL),
     NMETA,            S(_I),   S(_A),   S(_E),   S(_Q),   S(_L),            S(_D),   S(_H),   S(_T),   S(_N),   S(_S),   S(_B),            S(_QUO),
     LCTL,   _NO,      S(_BSL), S(_5),   S(_J),   S(_K),   S(_QUO),          S(_P),   S(_M),   S(_W),   S(_V),   S(_X),            _RC__,   _NO,
-    _LC_,                      _LGUI,    _______,          _SPC,    S(_SPC), _SPC,             _RG_,    _SPC,             _NO,     _DOW,    _UP),
+    _LCTL,                     _LGUI,    _______,          _SPC,    S(_SPC), _SPC,            _______,    _SPC,             _NO,     _DOW,    _UP),
   
    LAYOUT // -rshiftRU
    (_______,          _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
@@ -865,14 +865,14 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 
    LAYOUT // smetal
    (_______,          _______, _______, _______, _______, _______, _______, _LBR,    _______, S(_GRV), _GRV,    _RBR,    _______, _______, _______,
-    _______,          _______, CCS,     ENDL,    _______, _______,          S(_6),   S(_COM), _MIN,   S(_QUO), S(_DOT), S(_7),   _______, EEENTER,
-    _______,          S(_2),   _______, _______, LSWITCH, S(_1),            S(_SCLN),   _SCLN,_______,  S(_EQL), S(_4),   S(_3),            _______,
+    _______,          _______, CCS,     ENDL,    _______, _______,          S(_6),   S(_COM), QUOTES,  S(_QUO), S(_DOT), S(_7),   _______, _______,
+    _______,          S(_2),   _______, _______, LSWITCH, S(_1),            S(_SCLN),S(_SCLN),_______, S(_EQL), S(_4),   S(_3),            _______,
     _______, _______, _______, _______, _______, _______, _______,          LCTL(_R),CTA(_S), LCTL(_W),S(_8)   ,S(_SLS),          _______, _______,
     _______,                   _______, _______,          SSHIFT,  PYBLOCK, CBLOCK,           _______, _______,          _______, _______, _______),
-
+   
    LAYOUT // -bmetal
    (_______,          _______, _______, S(_LBR), BRACES,  S(_RBR), _______, _LBR,    _______, MBRACES, _COM,    _RBR,    _______, _______, _______,
-    _______,          _______, S(_9),   PARENS,   S(_0),  MBRACES,          S(_6),   S(_COM), _MIN,   S(_QUO), S(_DOT), S(_7),   _______,  EEENTER,
+    _______,          _______, S(_9),   PARENS,   S(_0),  MBRACES,          S(_6),   S(_COM), _MIN,   S(_QUO), S(_DOT), S(_7),   _______,  _______,
     _______,          C(_ENT), _LBR,    BRACKS,  S(_ENT), _RBR,             G(_ENT), G(_ENT), _______,  S(_EQL), S(_4),   S(_3),               _______,
     _______, _______, _______, _______, _______, _______, _______,          LCTL(_R),CTA(_S), LCTL(_W),S(_8)   ,S(_SLS),          _______, _______,
     _______,                   _______, _______,          COM_SPC, _______, G(_ENT),          _______, _______,          _______, _______, _______),
@@ -893,8 +893,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 
    LAYOUT // -emetal
    (_______,          _______, _______, _______, _______, _______, _______, _BSP,    A(_BSP),C(G(_DN)),C(G(_UP)),C(_K),  _______, _______, _______,
-    _______,          YANK,    SSHIFT,  SSHIFT,  GBSP,    _______,          C(_SPC), _PGDN,   _DN,     _UP,     _PGUP,   S(_RBR), _______, _______,
-    _______,          G(S(_D)),G(_Z),   _BSP,    LGUI,    _______,          G(_LT),  A(_LT),  _RT,     A(_RT),  G(_RT),  _DEL,             _______,
+    _______,          G(_C),   _LGUI,   SSHIFT,  GBSP,    _______,          C(_SPC), _PGDN,   _DN,     _UP,     _PGUP,   S(_RBR), _______, _______,
+    _LGUI,            KILL,    G(_Z),   _BSP,    _BSP,    LGUI,             G(_LT),  A(_LT),  _RT,     A(_RT),  G(_RT),  _DEL,             _______,
     G(_X),   _______, C(S(_K)),_______, A(_U),   CX_CX,   _______,          A(_W),   _LT,     A(_W),   CTA(_Y), A(_M),            A(_BSL), _______,
     _______,                   _______, _______,          _BSP,    _BSP,    _BSP,             _______, _______,          _______, _______, _______),
 
@@ -913,8 +913,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
     _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
 
    LAYOUT // -hMETA
-   (G(_SPC),          _______, PARENS,  _______, _______, _______, _______, _______, BRACES,  PARENS,  BRACKS,   EENTER,  _______, _______, _______,
-    EENTER,           _______, _______, _______, _______, _______,          _______, _______, G(_SLS), _______,  C(_G),   _______, _______, _______,
+   (G(_SPC),          _______, PARENS,  _______, _______, _______, _______, _______, BRACES,  PARENS,  BRACKS,   _______,  _______, _______, _______,
+    _______,          _______, _______, _______, _______, _______,          _______, _______, G(_SLS), _______,  C(_G),   _______, _______, _______,
     _______,          H_A,     _______, _______, LSWITCH, _______,          _______, _______, _______, _______, _______,  H_B,               _______,
     _______, _______, _______, _______, _______, _______, _______,          _______, _______, CXCS,    CXCS_CXE,CXCS_CZ, CXCS_CXCC,_______,
     _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
@@ -951,7 +951,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
    LAYOUT // -tmetal i = 0  
    (_______,          _______, _______, _______, _SCLN,   _______, _______, _______, CX_K,    CX_CF,   CX_B,    CX_3,    CX_RBRC, _______, CXCJ_0,
     _______,          _______, _______, _______, _______, S(_F6),           CX_0,    CX_G,    CX_O,    CX_1,    CX_0,    CX_0,    _______, CX_LBRC,
-    _______,          _______, _______, _______, _______, A(S(_1)),         A(S(_SCLN)),A(_X),S(_F10), CX_Z,    CX_1,    S(A(_F10)),       _______,
+    _______,          _______, _______, _______, _______, A(S(_1)),         A(S(_SCLN)),A(_X),S(_F10), CX_Z,    CX_1,    S(A(_F10)),       G(_F2),
     _______, _______, _______, _______, _______, _______, _______,          C(A(S(_5))),CXCJ_D,CXCJ_CD,CXCJ_CC, CXCJ_SD, CX_CC,   _______,
     _______,                   _______, _______,          SCLSPC,  SCLSPC,  CCS,              _______, _______,          _______, RGB_HUI, RGB_HUD),
 
