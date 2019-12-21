@@ -86,6 +86,7 @@ enum custom_keycodes {
                       BRACES,
                       MBRACES,
                       BRACKS,
+                      ABRACKS,
 					  QUOTES,
                       MF12, 
 					  GBSP,
@@ -830,7 +831,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
   {
    LAYOUT
    (_F2,              S(_F2),  _ESC,    S(_MIN), OSLTM,   S(_5),   _______, S(_EQL),  _EQL,    _MIN,   OSLBM,   G(S(_4)),G(S(_3)),_NO,     S(_F10),
-    LGUI,             _Y,      OSLSM,   _O,      _DOT,    _K,               _Z,      _G,      _C,      _R,      _F,      RSFT,    _SLS,    S(A(_F10)),
+    LGUI,             _Y,      OSLSM,   _O,      _DOT,    _K,               _Z,      _G,      _C,      _R,      _F,      _SLS,    _SLS,    S(A(_F10)),
     NMETA,            _I,      _A,      _E,      OSLEM,   _P,               _D,      _HM__,   _T,      _N,      _S,      _B,               _EQL,
     _Q,     _A,       _BSL,    S(_2),   _J,      _U,      _QUO,             _L,      _M,      _W,      _V,      _X,               _RC__,   _UP,
     _LCTL,                     _LALT,   RALT,             _SPC,   _OSMSFT,  MACMETA, RCMD,             _VDN,             _VUP,    MACMETA, _SPC),
@@ -865,8 +866,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 
    LAYOUT // smetal
    (_______,          _______, _______, _______, _______, _______, _______, _LBR,    _______, S(_GRV), _GRV,    _RBR,    _______, _______, _______,
-    _______,          _______, CCS,     ENDL,    _______, _______,          S(_6),   S(_COM), QUOTES,  S(_QUO), S(_DOT), S(_7),   _______, _______,
-    _______,          S(_2),   _______, _______, LSWITCH, S(_1),            S(_SCLN),S(_SCLN),_______, S(_EQL), S(_4),   S(_3),            _______,
+    _______,          _______, CCS,     ENDL,    _______, _______,          S(_6),   S(_COM), QUOTES,  S(_QUO), S(_DOT), ABRACKS, _______, _______,
+    _______,          S(_2),   _______, _______, LSWITCH, S(_1),            S(_SCLN),S(_SCLN),S(_7),   S(_EQL), S(_4),   S(_3),            _______,
     _______, _______, _______, _______, _______, _______, _______,          LCTL(_R),CTA(_S), LCTL(_W),S(_8)   ,S(_SLS),          _______, _______,
     _______,                   _______, _______,          SSHIFT,  PYBLOCK, CBLOCK,           _______, _______,          _______, _______, _______),
    
@@ -895,7 +896,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
    (_______,          _______, _______, _______, _______, _______, _______, _BSP,    A(_BSP),C(G(_DN)),C(G(_UP)),C(_K),  _______, _______, _______,
     _______,          G(_C),   _LGUI,   SSHIFT,  GBSP,    _______,          C(_SPC), _PGDN,   _DN,     _UP,     _PGUP,   S(_RBR), _______, _______,
     _LGUI,            KILL,    G(_Z),   _BSP,    _BSP,    LGUI,             G(_LT),  A(_LT),  _RT,     A(_RT),  G(_RT),  _DEL,             _______,
-    G(_X),   _______, C(S(_K)),_______, A(_U),   CX_CX,   _______,          A(_W),   _LT,     A(_W),   CTA(_Y), A(_M),            A(_BSL), _______,
+    G(_X),   _______, C(S(_K)),_______, A(_U),   CX_CX,   _______,          A(_W),   _LT,     G(_BSP), CTA(_Y), C(_K),            A(_BSL), _______,
     _______,                   _______, _______,          _BSP,    _BSP,    _BSP,             _______, _______,          _______, _______, _______),
 
    LAYOUT // -esmetal
