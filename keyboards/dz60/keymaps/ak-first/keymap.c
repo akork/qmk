@@ -833,7 +833,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
    (_F2,              S(_F2),  _ESC,    S(_MIN), OSLTM,   S(_5),   _______, S(_EQL),  _EQL,    _MIN,   OSLBM,   G(S(_4)),G(S(_3)),_NO,     S(_F10),
     LGUI,             _Y,      OSLSM,   _O,      _DOT,    _K,               _Z,      _G,      _C,      _R,      _F,      _SLS,    _SLS,    S(A(_F10)),
     NMETA,            _I,      _A,      _E,      OSLEM,   _P,               _D,      _HM__,   _T,      _N,      _S,      _B,               _EQL,
-    _Q,     _A,       _BSL,    S(_2),   _J,      _U,      _QUO,             _L,      _M,      _W,      _V,      _X,               _RC__,   _UP,
+    _BSL,     _A,     _Q,      S(_2),   _J,      _U,      _QUO,             _L,      _M,      _W,      _V,      _X,               _RC__,   _UP,
     _LCTL,                     _LALT,   RALT,             _SPC,   _OSMSFT,  MACMETA, RCMD,             _VDN,             _VUP,    MACMETA, _SPC),
    
    LAYOUT
@@ -894,7 +894,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 
    LAYOUT // -emetal
    (_______,          _______, _______, _______, _______, _______, _______, _BSP,    A(_BSP),C(G(_DN)),C(G(_UP)),C(_K),  _______, _______, _______,
-    _______,          G(_C),   _LGUI,   SSHIFT,  GBSP,    _______,          C(_SPC), _PGDN,   _DN,     _UP,     _PGUP,   S(_RBR), _______, _______,
+    _______,          G(_C),   _LGUI,   SSHIFT,  GBSP,    _______,          C(A(G(_5))),_PGDN,_DN,     _UP,     _PGUP,   S(_RBR), _______, _______,
     _LGUI,            KILL,    G(_Z),   _BSP,    _BSP,    LGUI,             G(_LT),  A(_LT),  _RT,     A(_RT),  G(_RT),  _DEL,             _______,
     G(_X),   _______, C(S(_K)),_______, A(_U),   CX_CX,   _______,          A(_W),   _LT,     G(_BSP), CTA(_Y), C(_K),            A(_BSL), _______,
     _______,                   _______, _______,          _BSP,    _BSP,    _BSP,             _______, _______,          _______, _______, _______),
