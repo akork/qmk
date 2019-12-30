@@ -106,9 +106,10 @@ enum custom_keycodes {
 					  
 };
 
+// -layers enum
 enum {
-      MACL,
-      RU,
+      ENL,
+      RUL,
       LRSFT,
       LRSFTRU,
       SMETAL,
@@ -234,7 +235,7 @@ enum {
 	
 uint32_t default_layer_state_set_user(uint32_t state) {
   switch (biton32(state)) {
-  case RU:
+  case RUL:
     rgblight_enable_noeeprom();
     /* rgblight_setrgb (0xFF,  0x00, 0x00); */
     break;
@@ -659,14 +660,14 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     case MAC:
       register_code(KC_A);
       unregister_code(KC_A);
-      default_layer_set(1UL<<MACL);
+      default_layer_set(1UL<<ENL);
       return false;
     case LSWITCH:
       SEND_STRING(SS_LGUI(" "));
       if (biton32(default_layer_state) == 0) {
-        default_layer_set(1UL<<2);
+        default_layer_set(1UL<<RUL);
       } else {
-        default_layer_set(1UL<<0);
+        default_layer_set(1UL<<ENL);
       }
       return false;
     }
@@ -858,11 +859,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 	 _LSFT,    _A,     _Q,      _Z,      _J,      _U,      C(S(_K)),         _D,      _M,      _W,      _V,      _X,               _RC__,   _UP,
 	 _LCTL,                     _LALT,   RALT,             _SPC,   OSLEM,    MACMETA, RCMD,             _VDN,             _VUP,    MACMETA, _SPC),
 
-	LAYOUT // -RU
-	(_______,          _______, _______, _______, _______, _______, _RBR,    _______, _______, _______, S(_SLS), _______, _______, _______, _______,
-	 _LSRU,            _Q,      OSLSM,   _J,      _SLS,    _E,               _LBR,    _U,      _Z,      _H,      _P,      _______, S(_BSL), _O,
-	 _______,          _B,      _F,      _T,      OSLEM,   _G,               _L,      _R,      _N,      _Y,      _C,      _COM,             _W,
-	 _DOT, _______,    _QUO,    _I,      _SCLN,   _M,      _S,               _K,      _V,      _D,      _X,      _A,               _______, _______,
+	LAYOUT // -RUL
+	(_______,          _______, _______, _______, _______, _______, _RBR,    _______, _COM,    _______, S(_SLS), _______, _______, _______, _______,
+	 SSHIFT,           CAPS,    OSLSM,   _J,      _SLS,    _M,               _Q,      _U,      _Z,      _H,      _A,      _P,      _O,      _O,
+	 _______,          _G,      _F,      _T,      _B,      _BSP,             _K,      _R,      _N,      _Y,      _C,      _W,               _LBR,
+	 _DOT, _______,    _QUO,    _I,      _SCLN,   _E,      _S,               _L,      _V,      _D,      _X,      _A,               _______, _______,
 	 _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
  
 	LAYOUT // -rshift = 5
@@ -881,7 +882,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 
 	LAYOUT // smetal
 	(_______,          _______, _______, _______, _______, _______, _______, _LBR,    S(_GRV), S(_GRV), _GRV,    _RBR,    _______, _______, _______,
-	 _______,          _______, CCS,     ENDL,    _______, _______,          S(_6),   S(_COM), QUOTES,  S(_QUO), S(_DOT), ABRACKS, _______, _______,
+	 _______,          _______, CCS,     ENDL,    _______, _______,          S(_6),   S(_COM), QUOTES,  S(_QUO), S(_DOT), _BSL,    _______, _______,
 	 _______,          S(_2),   _______, _______, LSWITCH, S(_1),            _SLS,    S(_SCLN),S(_7),   S(_EQL), S(_4),   S(_3),            _______,
 	 _______, _______, _______, _______, _______, _______, _______,          LCTL(_R),CTA(_S), LCTL(_W),S(_8)   ,S(_SLS),          _______, _______,
 	 _______,                   _______, _______,          SSHIFT,  PYBLOCK, CBLOCK,           _______, _______,          _______, _______, _______),
