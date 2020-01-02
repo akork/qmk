@@ -29,13 +29,11 @@ enum custom_keycodes {
 					  OSLEM,
 					  OSLBM,
 					  OSLTM,
+					  OSLNM,
 					  LGUI,
                       MAC,
                       WIN,
-                      NMETA,
-					  HMETA,
                       MACMETA,
-                      WINMETA,
                       RCMD,
                       LCMD,
                       LALT,
@@ -112,18 +110,15 @@ enum custom_keycodes {
 enum {
       ENL,
       RUL,
-      SMETAL,
-      RUSMETAL,
-      BMETAL,
+      OSMETAL,
       NMETAL,
       EMETAL,
-      ESMETAL,
-      EMETALWIN,
-      SEARCHL,
-      MACMETAL,
+      SEL_LAYER,
+      SMETAL,
+      RU_SMETAL,
       TABMETAL,
-      RCMDL,
-      LCMDL,
+      BMETAL,
+      SEARCHL,
 };
 
 #define _LSFT KC_LSFT
@@ -171,10 +166,26 @@ enum {
 #define _Y KC_Y
 #define _Z KC_Z
 
+#define _F1 KC_F1
 #define _F2 KC_F2
+#define _F3 KC_F3
+#define _F4 KC_F4
+#define _F5 KC_F5
 #define _F6 KC_F6
+#define _F7 KC_F7
+#define _F8 KC_F8
+#define _F9 KC_F9
 #define _F10 KC_F10
-#define _F10 KC_F10
+#define _F11 KC_F11
+#define _F12 KC_F12
+#define _F13 KC_F13
+#define _F14 KC_F14
+#define _F15 KC_F15
+#define _F16 KC_F16
+#define _F17 KC_F17
+#define _F18 KC_F18
+#define _F19 KC_F19
+#define _F20 KC_F20
 
 #define _RT KC_RGHT
 #define _LT KC_LEFT
@@ -218,12 +229,6 @@ enum {
 #define _END KC_END
 #define _DEL KC_DELETE
 
-#define _LC__ LCTL
-#define _RC__ C(A(_Y))
-#define _SPC__ LT(META, KC_SPC)
-#define _OSMSFT OSM(MOD_LSFT)
-#define _OSLSM OSL(SMETAL)
-
 #define SS_RGUI(string) SS_DOWN(X_RGUI) string SS_UP(X_RGUI)
 	
 uint32_t default_layer_state_set_user(uint32_t state) {
@@ -247,13 +252,13 @@ void unregister_cmd_after_cmdtab(void) {
   /*   unregister_mods(MOD_LGUI); */
   /*   isCmdSetByMeta = false; */
   /* } */
-  if (layer == MACMETAL) {
+  if (layer == OSMETAL) {
     unregister_mods(MOD_LGUI);
     unregister_mods(MOD_LALT);
   }
 };
 
-static uint16_t timer, rcmd_timer, lctl_timer, lsft_timer, rsft_timer, oslsm_timer, oslem_timer, oslbm_timer, osltm_timer;
+static uint16_t timer, rcmd_timer, lctl_timer, lsft_timer, rsft_timer, oslsm_timer, oslem_timer, oslbm_timer, osltm_timer, oslnm_timer;
 static const uint16_t timer_threshold = 250;
 static const uint16_t oneshot_threshold = 1000;
 static uint8_t rgblight_mode_current = RGBLIGHT_MODE_KNIGHT + 1;
@@ -261,11 +266,13 @@ static uint8_t oslsm_pressed = 0;
 static uint8_t oslem_pressed = 0;
 static uint8_t em_forced = 0;
 static uint8_t oslbm_pressed = 0;
-static uint8_t osltm_pressed = 0;
+static uint8_t osltm_pressed = 0,
+	oslnm_pressed;
 static uint8_t oslsm_another_pressed = 0;
 static uint8_t oslem_another_pressed = 0;
 static uint8_t oslbm_another_pressed = 0;
-static uint8_t osltm_another_pressed = 0;
+static uint8_t osltm_another_pressed = 0,
+	oslnm_another_pressed;
 static uint8_t
     caps = 0,
 	comma_advance = 0
@@ -275,7 +282,7 @@ static uint8_t
 
 void increase_timer(void) {
   uint8_t layer = biton32(layer_state);
-  if (layer == MACMETAL) timer += 2 * timer_threshold;
+  if (layer == OSMETAL) timer += 2 * timer_threshold;
 }
 
 static __attribute__ ((noinline)) void process_record_noinline(keyrecord_t *record) {
@@ -313,41 +320,52 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 			if (keycode != OSLSM)
 				oslsm_another_pressed = 1;
 		}
+		if (NMETAL == biton32(layer_state)) {
+			if ((oslnm_pressed == 0 && timer_elapsed(oslnm_timer) > oneshot_threshold) ||
+				(oslnm_pressed == 0 && oslnm_another_pressed == 1)) {
+				layer_off(NMETAL);
+			    process_record_noinline(record);
+				return 0;
+			}
+			if (keycode != OSLNM)
+				oslnm_another_pressed = 1;
+		}
+		if (EMETAL == biton32(layer_state) && !em_forced) {
+			if ((oslem_pressed == 0 && timer_elapsed(oslem_timer) > oneshot_threshold) ||
+				(oslem_pressed == 0 && oslem_another_pressed == 1)) {
+				layer_off(EMETAL);
+				process_record_noinline(record);
+				return 0;
+			}
+			if (keycode != OSLEM)
+				oslem_another_pressed = 1;
+		}
+	
+		if (caps == 1) {
+			if (keycode == _SPC) {
+				caps = 0;
+				unregister_code(KC_LSHIFT);
+				return 0;
+			} else if (keycode == MACMETA) {
+				caps = 0;
+				unregister_code(KC_LSHIFT);
+				return 0;
+			}
+		}
+		if (em_forced == 1 && (
+				keycode == _BSP ||
+				keycode == G(_C) ||
+				keycode == G(_X) ||
+				keycode == G(_V) ||
+				keycode == G(_SLS)
+				)) {
+			/* layer_off(EMETAL); */
+			em_forced = 0;
+			unregister_code(KC_LSHIFT);
+			return true;
+		} 
 	}
 	
-	if (caps == 1 && record->event.pressed) {
-		if (keycode == _SPC) {
-			caps = 0;
-			unregister_code(KC_LSHIFT);
-			return 1;
-		} else if (keycode == MACMETA) {
-			caps = 0;
-			unregister_code(KC_LSHIFT);
-			return 0;
-		}
-	}
-	if (em_forced == 1 && record->event.pressed && (
-			keycode == _BSP ||
-			keycode == G(_C))) {
-		/* layer_off(EMETAL); */
-		em_forced = 0;
-	    unregister_code(KC_LSHIFT);
-		return true;
-	} 
-  // OSL eMETAL
-  if (EMETAL == biton32(layer_state) && !em_forced) {
-  	  if ((oslem_pressed == 0) && record->event.pressed &&
-  		  timer_elapsed(oslem_timer) > oneshot_threshold) {
-  		  layer_off(EMETAL);
-  	  }
-  	  if (oslem_pressed == 0 && keycode != OSLEM &&
-  		  oslem_another_pressed == 1) {
-  		  layer_off(EMETAL);
-  	  }
-  	  if (keycode != OSLEM)
-  		  oslem_another_pressed = 1;
-  } // END: OSL eMETAL  
-  // OSL TABMETAL
   if (TABMETAL == biton32(layer_state)) {
   	  if ((osltm_pressed == 0) && record->event.pressed &&
   		  timer_elapsed(osltm_timer) > oneshot_threshold) {
@@ -372,7 +390,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       rsft_timer += 2 * timer_threshold;
   }
   
-  // MODIFIERS:
   switch(keycode) {
   case OSLTM:
 	  if (record->event.pressed) {
@@ -406,6 +423,16 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 		  layer_on(SMETAL);
 	  } else {
 		  oslsm_pressed = 0;
+		  }
+	  return false;
+  case OSLNM:
+	  if (record->event.pressed) {
+		  oslnm_timer = timer_read();
+		  oslnm_pressed = 1;
+		  oslnm_another_pressed = 0;
+		  layer_on(NMETAL);
+	  } else {
+		  oslnm_pressed = 0;
 		  }
 	  return false;
   case OSLBM:
@@ -501,9 +528,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   case MACMETA:
     if (record->event.pressed) {
       timer = timer_read();
-      layer_on(MACMETAL);
+      layer_on(OSMETAL);
     } else {
-      layer_off(MACMETAL);
+      layer_off(OSMETAL);
       if (timer_elapsed(timer) < timer_threshold) {
         register_code(KC_ENTER);
         unregister_code(KC_ENTER);
@@ -513,17 +540,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       /* clear_mods(); */
     }
     return false;
-  case NMETA:
-	  if (record->event.pressed) {
-		  layer_on(NMETAL);
-		  lsft_timer = timer_read();
-	  } else {
-		  layer_off(NMETAL);
-		  if (timer_elapsed(lsft_timer) < timer_threshold) {
-			  SEND_STRING(SS_TAP(X_TAB));
-		  }
-	  }
-	  return false;
   case LSFT:
 	  if (record->event.pressed) {
 		  register_code(KC_LSFT);
@@ -841,13 +857,13 @@ void keyboard_post_init_user(void) {
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = 
 {
-    
+
 	
-	LAYOUT
+	LAYOUT_all
 	(_F2,              LGUI,    _ESC,    S(_MIN), OSLTM,   S(_5),   _______, S(_EQL), _B,      _MIN,    OSLBM,    G(S(_4)),G(S(_3)),_NO,     S(_F10),
 	 SSHIFT,           CAPS,    OSLSM,   _O,      _DOT,    LEADER,           _Y,      _G,      _C,      _R,      _F,      _K,      _SLS,    S(A(_F10)),
-	 NMETA,            _P,      _A,      _E,      _I,      _BSP,             _L,      _H,      _T,      _N,      _S,      _EQL,             _EQL,
-	 _LSFT,    _A,     _Q,      _Z,      _J,      _U,      C(S(_K)),         _D,      _M,      _W,      _V,      _X,               _RC__,   _UP,
+	 OSLNM,            _P,      _A,      _E,      _I,      _BSP,             _L,      _H,      _T,      _N,      _S,      _EQL,              _TAB,
+	 _LSFT,    _A,     _MIN,    _Z,      _J,      _U,      _TAB,             _D,      _M,      _W,      _V,      _X,      _Q,      C(A(_Y)),_UP,
 	 _LCTL,                     _LALT,   RALT,             _SPC,   OSLEM,    MACMETA, RCMD,             _VDN,             _VUP,    MACMETA, _SPC),
 
 	LAYOUT // -ru_l
@@ -857,11 +873,39 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 	 _DOT, _______,    _QUO,    _I,      _SCLN,   _E,      _S,               _L,      _V,      _D,      _X,      _A,               _______, _______,
 	 _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
  
-	LAYOUT // -smeta_l
-	(_______,          _______, _______, _______, _______, _______, _______, _LBR,    S(_GRV), S(_GRV), _GRV,    _RBR,    _______, _______, _______,
-	 _______,          _______, CCS,     ENDL,    _______, _______,          S(_6),   S(_COM), QUOTES,  S(_QUO), S(_DOT), _BSL,    _______, _______,
+	LAYOUT // -os_layer
+	(DF(1),            _______, _F17,    _F18,    _______, _______, _______, _______, G(_LBR), C(S(_TAB)),C(_TAB),G(_W),  G(_Z),   _______, _______,
+	 WIN,              _______, C(_G),   _ESC,    _F15,    _______,          G(_R),   G(_GRV), SCMDTAB, CMDTAB,  SALTTAB, G(_RBR),  _______,_______,
+	 _______,          _______, CX_P,    CX_CP, GACS(_SPC),G(S(_P)),         G(S(_P)),G(_L),   G(_C),   G(_V),   G(_X),   GQ,               _______,
+	 _______, _______, _______, _______, _______, _______, _______,          _______, G(_C),   _______, _______, _______,          _______, RGB_TOG,
+	 _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
+
+	LAYOUT // -nmeta_l
+	(_______,          _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
+	 _______,          _______, _______, _______, _______, _______,          _______, _______, _0,      _9,      _______, _______, _______, _______,
+	 _______,          _______, _______, _______, _______, _______,          _6,      _1,      _2,      _3,      _4,      _5,               _______,
+	 _______, _______, _______, _______, _______, _______, _______,          _7,      _8,      _______, CC_PLS,  CC_MIN,  _______, _______,
+	 _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
+
+	LAYOUT // _editing_layer
+	(_______,          _______, _______, _______, _______, _______, _______, _BSP,    _______, C(G(_DN)),C(G(_UP)),C(_K), _______, _______, _______,
+	 LGUI,             C(S(_K)),_LGUI,   G(_Z),   G(_BSP), G(S(_D)),         C(A(G(_5))),_PGDN,_DN,     _UP,     _PGUP,   _______, _______, _______,
+	 G(S(_D)),         G(_X),   G(_V),   G(_C),   G(_SLS), _______,          G(_LT),  A(_LT),  _RT,     A(_RT),  G(_RT),  _DEL,             _SPC,
+	 G(_X),   _______, CC_PLS,  CC_MIN,  A(_U), C(M(_BSL)),_______,          A(_W),   _LT,     G(_BSP), CTA(_Y), C(_K),            A(_BSL), _______, 
+	 _______,                   _______, _______,          _BSP,    _BSP,    _______,          _______, _______,          _______, _______, _______),
+
+	LAYOUT // _selection_layer
+	(_______,          _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
+	 _______,          _______, _______, _______, _______, _______,          _______, _______, _______, _______, _______, _______, _______, _______,
+	 _______,          G(_X),   _______, _______, _______, _______,          _______, _______, _______, _______, _______, _______,          _______,
+	 _______, _______, _______, _______, _______, CX_CX,   _______,          _______, _______, _______, _______, _______,          _______, _______,
+	 _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
+
+	LAYOUT // _symbols_layer
+	(_______,          _______, _______, _______, _______, _______, _______, _LBR,    S(_GRV), _QUO,    _GRV,    _RBR,    _______, _______, _______,
+	 _______,          _______, CCS,     ENDL,    _BSL,    S(_BSL),          S(_6),   S(_COM), QUOTES,  S(_QUO), S(_DOT), _BSL,    _______, _______,
 	 _______,          S(_2),   _______, _______, LSWITCH, S(_1),            _SLS,    S(_SCLN),S(_7),   S(_EQL), S(_4),   S(_3),            _______,
-	 _______, _______, _______, _______, _______, _______, _______,          LCTL(_R),CTA(_S), LCTL(_W),S(_8)   ,S(_SLS),          _______, _______,
+	 _______, _______, _______, _______, _______, _______, _______,          C(A(_R)),C(A(_S)),C(_W),   S(_8),   S(_SLS),          _______, _______,
 	 _______,                   _______, _______,          RT_SPC,  RT2_SPC, ENDL_SPC,         _______, _______,          _______, _______, _______),
    
 	LAYOUT // -rusmeta_l
@@ -871,6 +915,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 	 _______, _______, _______, _______, _______, _______, _______,          LCTL(_R),CTA(_S), LCTL(_W),_______, S(_7),            _______, _______,
 	 _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
 
+	LAYOUT // -tmetal_l
+	(_______,          _______, _______, _______, _SCLN,   _______, _______, _______, CX_K,    CX_CF,   CX_B,    CX_3,    CX_RBRC, _______, CXCJ_0,
+	 _______,          _______, _______, _______, _______, S(_F6),           CX_Z,    CX_G,    CX_O,    CX_1,    CX_0,    CX_0,    _______, CX_LBRC,
+	 _______,          _______, _______, _______, _______, A(S(_1)),         A(S(_SCLN)),A(_X),S(_F10), CX_Z,    CXCS,    S(A(_F10)),       G(_F2),
+	 _______, _______, _______, _______, _______, _______, _______,          C(A(S(_5))),CXCJ_D,CXCJ_CD,CXCJ_CC, CXCJ_SD, CX_CC,   _______,
+	 _______,                   _______, _______,          SCLSPC,  ENDSPC,  CCS,              _______, _______,          _______, RGB_HUI, RGB_HUD),
+
 	LAYOUT // -bmeta_l
 	(_______,          _______, _______, S(_LBR), BRACES,  S(_RBR), _______, _LBR,    _______, MBRACES, _COM,    _RBR,    _______, _______, _______,
 	 _______,          _______, S(_9),   PARENS,   S(_0),  MBRACES,          S(_6),   S(_COM), _MIN,   S(_QUO), S(_DOT), S(_7),   _______,  _______,
@@ -878,54 +929,12 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 	 _______, _______, _______, _______, _______, _______, _______,          LCTL(_R),CTA(_S), LCTL(_W),S(_8)   ,S(_SLS),          _______, _______,
 	 _______,                   _______, _______,          COM_SPC, ENDSPC,  G(_ENT),          _______, _______,          _______, _______, _______),
 
-	LAYOUT // -NMETA = 5
-	(_______,          _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _VIMRC,
-	 _______,          _______, _______, _______, _______, _______,          _______, _______, _0,      _9,      _______, _______, _______, _______,
-	 _______,          _______, _______, _______, _______, _______,          _6,      _1,      _2,      _3,      _4,      _5,               _______,
-	 _______, _______, _______, _______, _______, _______, _______,          _7,      _8,      _______, CC_PLS,  CC_MIN,  _______, _______,
-	 _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
-
-	LAYOUT // -emetal
-	(_______,          _______, _______, _______, _______, _______, _______, _BSP,    _______, C(G(_DN)),C(G(_UP)),C(_K),  _______, _______, _______,
-	 LGUI,             G(_C),   _LGUI,   SSHIFT,  G(_BSP), _______,          C(A(G(_5))),_PGDN,_DN,     _UP,     _PGUP,   _______, _______, _______,
-	 _LGUI,            KILL,    G(_Z),   _BSP,    _BSP,    _______,          G(_LT),  A(_LT),  _RT,     A(_RT),  G(_RT),  _DEL,             _______,
-	 G(_X),   _______, C(S(_K)),_______, A(_U),   CX_CX,   _______,          A(_W),   _LT,     G(_BSP), CTA(_Y), C(_K),            A(_BSL), _______,
-	 _______,                   _______, _______,          _BSP,    _BSP,    _BSP,             _______, _______,          _______, _______, _______),
-
-	LAYOUT // -esmetal
-	(_______,          _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
-	 _______,          _______, _______, _______, _______, _______,          _______, _______, _______, _______, _______, _______, _______, _______,
-	 _______,          _______, _______, _______, _______, _______,          _______, _______, _______, _______, _______, _______,          _______,
-	 _______, _______, _______, _______, _______, _______, _______,          _______, _______, _______, _______, _______,          _______, _______,
-	 _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
-
-	LAYOUT // -eMetaWin
-	(_______,          _______, _______, _______, _______, _______, _______, _______,C(_BSP),  _______, _______, _______, _______, _______, _______,
-	 _______,          A(_D),   _______, _ESC,    C(S(_MIN)),_______,        _______, _PGDN,   _DN,     _UP,     _PGUP,   _______, _______, _______,
-	 _______,          C(_K),   C(_D),   A(_U),   _______, _______,          _HOME,   _BSP,    _RT,     C(_RT),  _END,  M0_CK,            _______,
-	 _______, _______, _______, _______, _______, _______, _______,          C(_LT),  _LT,     A(_W),   CTA(_Y), A(_M),            A(_BSL), _______,
-	 _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
-
-	LAYOUT // -searchl
+	LAYOUT // -search_l
 	(_______,          _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
 	 _______,          _______, _______, _______, _______, _______,          _______, _______, _______, _______, _______, _______, _______, _______,
 	 _______,          _______, _______, _______, _______, _______,          _______, _______, _______, _______, _______, _______,          _______,
 	 _______, _______, _______, _______, _______, _______, _______,          _______, _______, _______, _______, _______, _______, _______,
 	 _______,                   _______, _______,          _______, _______, G(_G),          _______, _______,          _______, _______, _______),
-
-	LAYOUT // -MACMETA
-	(DF(1),            _______, KC_F17,  KC_F18,  _______, _______, _______, _______, G(_LBR), C(S(_TAB)),C(_TAB),G(_W),  G(_Z),   _______, _______,
-	 WIN,              _______,G(_ENT),  _______, KC_F15,  _______,          G(_R),   G(_GRV), SCMDTAB, CMDTAB,  SALTTAB, G(_RBR),  _______,_______,
-	 _______,          _______, CX_P,    CX_CP, GACS(_SPC),_______,          GUA(_DN),G(_L),   G(_C),   G(_V),   G(_X),   GQ,               _______,
-	 _______, _______, _______, _______, _______, _______, _______,          _______, G(_C),   _______, _______, _______,          _______, RGB_TOG,
-	 _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
-
-	LAYOUT // -tmetal
-	(_______,          _______, _______, _______, _SCLN,   _______, _______, _______, CX_K,    CX_CF,   CX_B,    CX_3,    CX_RBRC, _______, CXCJ_0,
-	 _______,          _______, _______, _______, _______, S(_F6),           CX_Z,    CX_G,    CX_O,    CX_1,    CX_0,    CX_0,    _______, CX_LBRC,
-	 _______,          _______, _______, _______, _______, A(S(_1)),         A(S(_SCLN)),A(_X),S(_F10), CX_Z,    CXCS,    S(A(_F10)),       G(_F2),
-	 _______, _______, _______, _______, _______, _______, _______,          C(A(S(_5))),CXCJ_D,CXCJ_CD,CXCJ_CC, CXCJ_SD, CX_CC,   _______,
-	 _______,                   _______, _______,          SCLSPC,  ENDSPC,  CCS,              _______, _______,          _______, RGB_HUI, RGB_HUD),
 
 };
 
