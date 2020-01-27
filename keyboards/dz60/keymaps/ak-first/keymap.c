@@ -11,6 +11,13 @@
 
 enum custom_keycodes {
 					  TEST = SAFE_RANGE,
+					  C_ENT,
+					  COUT,
+					  CIN,
+					  NAMESPACE,
+					  PLUSPLUS,
+					  MOD_SWITCH,
+					  JOKER,
 					  JOIN_L,
 					  DUP,
 					  L_SEL,
@@ -19,7 +26,7 @@ enum custom_keycodes {
 					  PGDN,
 					  EQL_EQL,
 					  EQL_SPC,
-					  ENDL_SPC,
+					  ENDL_JOKER,
 					  RT_SPC,
 					  RT2_SPC,
 					  ADVANCE,
@@ -33,10 +40,10 @@ enum custom_keycodes {
 					  SSHIFT,
 					  YANK,
 					  KILL,
-					  OSLNM,
-					  OSLEM,
+					  OSL_NUM,
+					  OSL_EDI,
 					  OSL_SYM,
-					  OSLBM,
+					  OSL_BRA,
 					  OSL_IDE,
 					  OSL_REF,
 					  LGUI,
@@ -119,18 +126,18 @@ enum custom_keycodes {
 
 // -layers enum
 enum {
-      ENL,
-      RUL,
-      OSMETAL,
-      NMETAL,
-      EMETAL,
-      SEL_LAYER,
-      SMETAL,
-      RU_SMETAL,
-	  BMETAL,
-      BRACKETS_RU_L,      
-      TABMETAL,
-	  REFACT_L,
+      EN_LR,
+      RU_LR,
+      MACOS_LR,
+      NUM_LR,
+      EDI_LR,
+      SEL_LR,
+      SYM_LR,
+      RU_SYM_LR,
+	  BRA_LR,
+      RU_BRA_LR,      
+      IDE_LR,
+	  REF_LR,
 };
 
 #define _LSFT KC_LSFT
@@ -226,7 +233,7 @@ enum {
 #define _DOW KC_DOWN
 #define _UP KC_UP
 #define _EQL KC_EQL
-#define _SCLN KC_SCLN
+#define _SCL KC_SCLN
 #define _GRV KC_GRV
 #define CTA(x) LCTL(LALT(x))
 #define ALT(x) LALT(x)
@@ -240,21 +247,62 @@ enum {
 #define _HOME KC_HOME
 #define _END KC_END
 #define _DEL KC_DELETE
+#define GR(x) RGUI(x)
 
 #define SS_RGUI(string) SS_DOWN(X_RGUI) string SS_UP(X_RGUI)
 	
-uint32_t default_layer_state_set_user(uint32_t state) {
-  switch (biton32(state)) {
-  case RUL:
-    rgblight_enable_noeeprom();
-    /* rgblight_setrgb (0xFF,  0x00, 0x00); */
-    break;
-  default: //  for any other layers, or the default layer
-    /* rgblight_setrgb (0x00,  0x00, 0xFF); */
-    rgblight_disable_noeeprom();
-    break;
-  }
-  return state;
+static uint16_t timer, rcmd_timer, lctl_timer, lsft_timer, rsft_timer, osl_sym_timer, osl_edi_timer, osl_num_timer;
+static const uint16_t timer_threshold = 250;
+static const uint16_t oneshot_threshold = 700, joker_threshold = 2000;  
+static uint8_t rgblight_mode_current = RGBLIGHT_MODE_KNIGHT + 1;
+static uint8_t osl_sym_pressed = 0;
+static uint8_t osl_edi_pressed = 0;
+static uint8_t em_forced = 0;
+static uint8_t 
+	osl_num_pressed;
+static uint8_t osl_sym_another_pressed = 0;
+static uint8_t osl_edi_another_pressed = 0;
+static uint8_t 
+	osl_num_another_pressed;
+
+static uint16_t oneshot_timer, rt_spc_timer, endl_joker_timer, esc_promise_timer;
+static uint8_t oneshot_down = 0, oneshot_fired = 0;
+static uint8_t
+    caps = 0,
+	comma_advance = 0,
+ 	rt_spc = 0,
+	endl_joker = 0,
+	ru_off = 0,
+	mod = 0;
+
+
+
+void keyboard_post_init_user(void) {
+  // Call the post init code.
+	
+	/* rgblight_disable(); */
+	rgblight_disable();
+	rgblight_mode_noeeprom(rgblight_mode_current + 7); // sets mode to Fast breathing without saving
+
+	/* rgblight_enable_noeeprom(); // enables Rgb, without saving settings */
+	/* rgblight_sethsv_noeeprom(250, 200, 100); // sets the color to teal/cyan without saving */
+	/* rgblight_mode_noeeprom(rgblight_mode_current); // sets mode to Fast breathing without saving */
+	/* rgblight_disable_noeeprom(); */
+}
+
+uint32_t layer_state_set_user(uint32_t state) {
+	/* rgblight_enable_noeeprom(); */
+	/* if () */
+
+	if (1UL << RU_LR & state) {
+		rgblight_enable_noeeprom();
+		/* rgblight_setrgb(0, 16, 0); //green */
+	} else {
+		rgblight_disable_noeeprom();
+		/* rgblight_setrgb(16, 0, 0); //green */
+		/* rgblight_disable_noeeprom(); */
+	}
+	return state;
 }
 
 void unregister_cmd_after_cmdtab(void) {
@@ -264,48 +312,50 @@ void unregister_cmd_after_cmdtab(void) {
   /*   unregister_mods(MOD_LGUI); */
   /*   isCmdSetByMeta = false; */
   /* } */
-  if (layer == OSMETAL) {
+  if (layer == MACOS_LR) {
     unregister_mods(MOD_LGUI);
     unregister_mods(MOD_LALT);
   }
 };
 
-static uint16_t timer, rcmd_timer, lctl_timer, lsft_timer, rsft_timer, osl_sym_timer, oslem_timer, oslbm_timer, oslnm_timer;
-static const uint16_t timer_threshold = 250;
-static const uint16_t oneshot_threshold = 700;  
-static uint8_t rgblight_mode_current = RGBLIGHT_MODE_KNIGHT + 1;
-static uint8_t osl_sym_pressed = 0;
-static uint8_t oslem_pressed = 0;
-static uint8_t em_forced = 0;
-static uint8_t oslbm_pressed = 0;
-static uint8_t 
-	oslnm_pressed;
-static uint8_t osl_sym_another_pressed = 0;
-static uint8_t oslem_another_pressed = 0;
-static uint8_t oslbm_another_pressed = 0;
-static uint8_t 
-	oslnm_another_pressed;
-
-static uint16_t oneshot_timer;
-static uint8_t oneshot_down = 0, oneshot_fired = 0;
-static uint8_t
-    caps = 0,
-	comma_advance = 0
-	/* smeta_advance = 0 */
-	;
-
 void increase_timer(void) {
   uint8_t layer = biton32(layer_state);
-  if (layer == OSMETAL) timer += 2 * timer_threshold;
+  if (layer == MACOS_LR) timer += 2 * timer_threshold;
 }
 
 static __attribute__ ((noinline)) void process_record_noinline(keyrecord_t *record) {
 	process_record(record);
 }
 
+void matrix_scan_user(void) {
+	if (biton32(layer_state) == REF_LR) {
+		if ((!oneshot_down && oneshot_fired) ||
+			(!oneshot_down && timer_elapsed(oneshot_timer) > oneshot_threshold)) {
+			layer_off(REF_LR);
+		}
+	}
+	if (((3UL << BRA_LR) & layer_state)) {
+		if ((!oneshot_down && oneshot_fired) ||
+			(!oneshot_down && timer_elapsed(oneshot_timer) > oneshot_threshold)) {
+			layer_off(BRA_LR);
+			if (1UL << RU_LR & layer_state)
+				layer_off(RU_BRA_LR);
+		}
+	}
+	if (ru_off) {
+		if (1UL << RU_LR & layer_state) {
+			send_string(SS_LGUI(" "));
+			layer_off(RU_LR);
+			ru_off = 0;
+		}
+	}
+}
+
+
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     if (record->event.pressed) {
-		if (((3UL << BMETAL) & layer_state)) {
+		/* rgblight_enable_noeeprom(); */
+		if (((3UL << BRA_LR) & layer_state)) {
 			/* if (comma_advance == 1) { */
 			/* 	if (keycode == COM_SPC) { */
 			/* 		register_code(_RT); */
@@ -313,21 +363,22 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 			/* 	} */
 			/* 	comma_advance = 0; */
 			/* } */
-			if ((oslbm_pressed == 0 && timer_elapsed(oslbm_timer) > oneshot_threshold) ||
-				(oslbm_pressed == 0 && oslbm_another_pressed == 1)) {
-				layer_off(BMETAL);
-				if (biton32(default_layer_state) == RUL) {
-					layer_off(BRACKETS_RU_L);
-				}
-				process_record_noinline(record);
-				return 0;
-			}
-			if (keycode != OSLBM)
-				oslbm_another_pressed = 1;
+			
+			/* if ((osl_bra_pressed == 0 && timer_elapsed(osl_bra_timer) > oneshot_threshold) || */
+			/* 	(osl_bra_pressed == 0 && osl_bra_another_pressed == 1)) { */
+			/* 	layer_off(BRA_LR); */
+			/* 	if (1UL << RU_LR & layer_state) */
+			/* 		layer_off(RU_BRA_LR); */
+			/* 	process_record_noinline(record); */
+			/* 	return 0; */
+			/* } */
+			
+			if (keycode != OSL_BRA)
+			    oneshot_fired = 1;
 			/* if (keycode == COM_SPC) */
-			/* oslbm_another_pressed = 0; */
+			/* osl_bra_another_pressed = 0; */
 
-			/* if (biton32(default_layer_state) == RUL) { */
+			/* if (biton32(default_layer_state) == RU_LR) { */
 			/* 	switch (keycode) { */
 			/* 	case _LBR: */
 			/* 		send_string("~"); */
@@ -344,68 +395,100 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 			/* 	} */
 			/* } */
 		}
-		if (SMETAL == biton32(layer_state)) {
+		if (SYM_LR == biton32(layer_state)) {
 			if ((osl_sym_pressed == 0 && timer_elapsed(osl_sym_timer) > oneshot_threshold) ||
 				(osl_sym_pressed == 0 && osl_sym_another_pressed == 1)) {
-				layer_off(SMETAL); 
-			    process_record_noinline(record);
+				layer_off(SYM_LR); 
+				if (1UL << RU_LR & layer_state)
+					layer_off(RU_SYM_LR);
+				process_record_noinline(record);
 				return 0;
 			}
 			if (keycode != OSL_SYM)
 				osl_sym_another_pressed = 1;
-			if (biton32(default_layer_state) == RUL) {
-				switch (keycode) {
-				case S(_SLS):
-					send_string("&");
-					return 0;
-				}
 			}
-		}
-		if (NMETAL == biton32(layer_state)) {
-			if ((oslnm_pressed == 0 && timer_elapsed(oslnm_timer) > oneshot_threshold) ||
-				(oslnm_pressed == 0 && oslnm_another_pressed == 1)) {
-				layer_off(NMETAL);
+		if (NUM_LR == biton32(layer_state)) {
+			if ((osl_num_pressed == 0 && timer_elapsed(osl_num_timer) > oneshot_threshold) ||
+				(osl_num_pressed == 0 && osl_num_another_pressed == 1)) {
+				layer_off(NUM_LR);
 			    process_record_noinline(record);
 				return 0;
 			}
-			if (keycode != OSLNM)
-				oslnm_another_pressed = 1;
+			if (keycode != OSL_NUM)
+				osl_num_another_pressed = 1;
 		}
-		if (EMETAL == biton32(layer_state) && !em_forced) {
-			if ((oslem_pressed == 0 && timer_elapsed(oslem_timer) > oneshot_threshold) ||
-				(oslem_pressed == 0 && oslem_another_pressed == 1)) {
-				layer_off(EMETAL);
+		if (EDI_LR == biton32(layer_state) && !em_forced) {
+			if ((osl_edi_pressed == 0 && timer_elapsed(osl_edi_timer) > oneshot_threshold) ||
+				(osl_edi_pressed == 0 && osl_edi_another_pressed == 1)) {
+				layer_off(EDI_LR);
 				process_record_noinline(record);
 				return 0;
 			}
-			if (keycode != OSLEM)
-				oslem_another_pressed = 1;
+			if (keycode != OSL_EDI)
+				osl_edi_another_pressed = 1;
 			
 		}
-		if (biton32(layer_state) == REFACT_L) {
+		if (biton32(layer_state) == REF_LR) {
 			/* if ((!oneshot_down && timer_elapsed(oneshot_timer) > oneshot_threshold) || */
 			/* 	(!oneshot_down && oneshot_fired)) { */
-			/* 	layer_off(REFACT_L); */
+			/* 	layer_off(REF_LR); */
 			/* 	process_record_noinline(record); */
 			/* 	return 0; */
 			/* } */
 			if (keycode != OSL_REF)
 				oneshot_fired = 1;
 		}
-		if (TABMETAL == biton32(layer_state)) {
+		if (IDE_LR == biton32(layer_state)) {
 			if ((!oneshot_down && timer_elapsed(oneshot_timer) > oneshot_threshold) ||
 				(!oneshot_down && oneshot_fired)) {
-				layer_off(TABMETAL);
+				layer_off(IDE_LR);
 				process_record_noinline(record);
 				return 0;
 			}
 			if (keycode != OSL_IDE)
 				oneshot_fired = 1;
 		}
- 
+ 		if (rt_spc == 1 && timer_elapsed(rt_spc_timer) < joker_threshold) {
+			if (keycode == MACMETA) {
+				send_string(SS_TAP(X_BSPACE) ", ");
+				rt_spc = 0;
+				return 0;
+			}
+		} else {
+			rt_spc = 0;
+		}
+		if (endl_joker == 1 && timer_elapsed(endl_joker_timer) < joker_threshold) {
+			if (keycode == OSL_BRA) {
+				send_string(SS_TAP(X_BSPACE) ",");
+				endl_joker = 0;
+				return 0;
+			} else if (keycode == _L) {
+				send_string(SS_TAP(X_BSPACE) " ");
+				keycode = BL_BRACES;
+				endl_joker = 0;
+			} else if (keycode == _T) {
+				send_string(SS_TAP(X_BSPACE) ":" SS_TAP(X_ENTER));
+				endl_joker = 0;
+				return 0;
+			} else if (keycode == _G) {
+				send_string(SS_TAP(X_BSPACE) ": ");
+				endl_joker = 0;
+				return 0;
+			} else if (keycode == _H) {
+				send_string(SS_TAP(X_BSPACE) " {}" SS_TAP(X_LEFT) SS_TAP(X_ENTER));
+				if (!mod)
+					send_string(SS_TAP(X_UP) SS_DOWN(X_LGUI) SS_TAP(X_RIGHT) SS_UP(X_LGUI) SS_TAP(X_ENTER) SS_TAP(X_TAB));
+				endl_joker = 0; {
+					
+				}
+				return 0;
+			}
+		} else {
+			endl_joker = 0;
+		}
+
 		if (caps == 1) {
-			if (keycode == _SPC ||
-				keycode == CAPS ||
+			if (keycode == CAPS ||
 				keycode == _ESC ||
 				keycode == MACMETA) {
 				caps = 0;
@@ -413,8 +496,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 				return 0;
 			}
 			
-			if (keycode >= OSLNM &&
-				keycode <= OSL_REF) {
+			if ((keycode >= OSL_NUM &&
+				 keycode <= OSL_REF) ||
+				keycode == _SPC) {
 				caps = 0;
 				unregister_code(KC_LSHIFT);
 			}
@@ -443,7 +527,26 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 			}
 		}
 	}
-	
+
+	if (record->event.pressed) {
+		if (keycode == _ENT ||
+			keycode == G(_ENT) ||
+			keycode == MACMETA) {
+			if (1UL << RU_LR & layer_state)
+				ru_off = 1;
+		}
+  
+		if (keycode == LSWITCH) {
+			send_string(SS_LGUI(" "));
+			if (1UL << RU_LR & layer_state) {
+				layer_off(RU_LR);
+			} else {
+				layer_on(RU_LR);
+			}
+			return 0;
+		}
+	}
+
 	/* unregiterCmdAfterCMDTAB(); */
 	if (record->event.pressed) {
 		if (keycode != MACMETA) increase_timer();
@@ -461,7 +564,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 		  oneshot_timer = timer_read();
 		  oneshot_down = 1;
 		  oneshot_fired = 0;
-		  layer_on(REFACT_L);
+		  layer_on(REF_LR);
 	  } else {
 		  oneshot_down = 0;
 	  }
@@ -471,21 +574,21 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 		  oneshot_timer = timer_read();
 		  oneshot_down = 1;
 		  oneshot_fired = 0;
-		  layer_on(TABMETAL);
+		  layer_on(IDE_LR);
 	  } else {
 		  oneshot_down = 0;
 	  }
 	  return false;
-  case OSLEM:
+  case OSL_EDI:
 	  if (record->event.pressed) {
-		  oslem_timer = timer_read();
-		  oslem_pressed = 1;
-		  oslem_another_pressed = 0;
-		  layer_on(EMETAL);
+		  osl_edi_timer = timer_read();
+		  osl_edi_pressed = 1;
+		  osl_edi_another_pressed = 0;
+		  layer_on(EDI_LR);
 	  } else {
-		  oslem_pressed = 0;
-		  if (oslem_another_pressed && !em_forced)
-			  layer_off(EMETAL);
+		  osl_edi_pressed = 0;
+		  if (osl_edi_another_pressed && !em_forced)
+			  layer_off(EDI_LR);
 	  }
 	  return false;
   case OSL_SYM:
@@ -493,32 +596,31 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 		  osl_sym_timer = timer_read();
 		  osl_sym_pressed = 1;
 		  osl_sym_another_pressed = 0;
-		  layer_on(SMETAL);
+		  layer_on(SYM_LR);
 	  } else {
 		  osl_sym_pressed = 0;
 		  }
 	  return false;
-  case OSLNM:
+  case OSL_NUM:
 	  if (record->event.pressed) {
-		  oslnm_timer = timer_read();
-		  oslnm_pressed = 1;
-		  oslnm_another_pressed = 0;
-		  layer_on(NMETAL);
+		  osl_num_timer = timer_read();
+		  osl_num_pressed = 1;
+		  osl_num_another_pressed = 0;
+		  layer_on(NUM_LR);
 	  } else {
-		  oslnm_pressed = 0;
+		  osl_num_pressed = 0;
 		  }
 	  return false;
-  case OSLBM:
+  case OSL_BRA:
 	  if (record->event.pressed) {
-		  oslbm_timer = timer_read();
-		  oslbm_pressed = 1;
-		  oslbm_another_pressed = 0;
-		  layer_on(BMETAL);
-		  if (biton32(default_layer_state) == RUL) {
-			  layer_on(BRACKETS_RU_L);
-		  }
+		  oneshot_timer = timer_read();
+		  oneshot_down = 1;
+		  oneshot_fired = 0;
+		  layer_on(BRA_LR);
+		  if (1UL << RU_LR & layer_state)
+			  layer_on(RU_BRA_LR);
 	  } else {
-		  oslbm_pressed = 0;
+		  oneshot_down = 0;
 	  }
 	  return false;
   case CAPS:
@@ -532,10 +634,18 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 		  send_string(SS_LCTRL(SS_RGUI("x")));
 	  } else { }
 	  return false;
+  case JOKER:
+	  if (record->event.pressed) {
+		  esc_promise_timer = timer_read();
+		  register_code(_LGUI);
+	  } else {
+		  unregister_code(_LGUI);
+	  }
+	  return 0;
   case ADVANCE:
 	  if (record->event.pressed) {
 		  comma_advance = 1;
-		  oslbm_another_pressed = 0;
+		  oneshot_fired = 0;
 	  } else { }
 	  return false;
   case LGUI:
@@ -544,7 +654,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 		  register_code(KC_LGUI);
 	  } else {
 		  if (timer_elapsed(timer) < timer_threshold) {
-			  layer_off(EMETAL);
+			  layer_off(EDI_LR);
 			  em_forced = 0;
 			  unregister_code(KC_LGUI);
 			  unregister_code(KC_LSHIFT);
@@ -557,7 +667,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   case SSHIFT:
 	  if (record->event.pressed) {
 		  register_code(KC_LSHIFT);
-		  layer_on(EMETAL);
+		  layer_on(EDI_LR);
 		  em_forced = 1;
 	  }
 	  return false;
@@ -567,9 +677,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   case MACMETA:
     if (record->event.pressed) {
       timer = timer_read();
-      layer_on(OSMETAL);
+      layer_on(MACOS_LR);
     } else {
-      layer_off(OSMETAL);
+      layer_off(MACOS_LR);
       if (timer_elapsed(timer) < timer_threshold) {
         register_code(KC_ENTER);
         unregister_code(KC_ENTER);
@@ -578,7 +688,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       unregister_code(KC_LALT);
       /* clear_mods(); */
     }
-    return false;
+    return 0;
   case LSFT:
 	  if (record->event.pressed) {
 		  register_code(KC_LSFT);
@@ -592,346 +702,301 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 	  return false;
 } // end WINMETA MACMETA
   // CMD-TAB like keycodes
-  if (biton32(layer_state) == OSMETAL) {
-	  switch(keycode) {
-	  case CMDTAB:
-		  if (record->event.pressed) {
+  if (biton32(layer_state) == MACOS_LR) {
+	  if (record->event.pressed) {
+		  switch(keycode) {
+		  case G(A(_C)):
+		  	  register_code(KC_RGUI);
+		  	  register_code(KC_LALT);
+		  	  register_code(KC_C);
+		  	  unregister_code(KC_C);
+		  	  unregister_code(KC_LALT);
+		  	  unregister_code(KC_RGUI);
+		  	  return 0;
+		  /* case G(A(S(_C))): */
+		  /* 	  register_code(KC_RGUI); */
+		  /* 	  register_code(KC_LALT); */
+		  /* 	  register_code(KC_LSHIFT); */
+		  /* 	  register_code(KC_C); */
+		  /* 	  unregister_code(KC_C); */
+		  /* 	  register_code(KC_LSHIFT); */
+		  /* 	  unregister_code(KC_LALT); */
+		  /* 	  unregister_code(KC_RGUI); */
+		  /* 	  return 0; */
+		  case CMDTAB:
+			  if (record->event.pressed) {
+				  if (get_mods() & MOD_BIT(KC_LSHIFT)) {
+					  del_mods(MOD_BIT(KC_LSHIFT));
+				  }
+				  del_mods(MOD_BIT(KC_LGUI));
+				  register_code(KC_LGUI);
+				  register_code(KC_TAB);
+				  unregister_code(KC_TAB);
+			  }
+			  return false;
+		  case SCMDTAB:
+			  if (record->event.pressed) {
+				  register_code(KC_LGUI);
+				  register_code(KC_LSHIFT);
+				  register_code(KC_TAB);
+				  unregister_code(KC_TAB);
+				  unregister_code(KC_LSHIFT);
+			  }
+			  return false;
+		  case ALTTAB:
+			  if (record->event.pressed) {
+				  register_code(KC_LALT);
+				  register_code(KC_TAB);
+				  unregister_code(KC_TAB);
+			  }
+			  return false;
+		  case SALTTAB:
+			  if (record->event.pressed) {
+				  register_code(KC_LALT);
+				  register_code(KC_LSHIFT);
+				  register_code(KC_TAB);
+				  unregister_code(KC_TAB);
+				  unregister_code(KC_LSHIFT);
+			  }
+			  return false;
+		  case GQ:
 			  register_code(KC_LGUI);
-			  register_code(KC_TAB);
-			  unregister_code(KC_TAB);
-		  }
-		  return false;
-	  case SCMDTAB:
-		  if (record->event.pressed) {
-			  register_code(KC_LGUI);
-			  register_code(KC_LSHIFT);
-			  register_code(KC_TAB);
-			  unregister_code(KC_TAB);
-			  unregister_code(KC_LSHIFT);
-		  }
-		  return false;
-	  case ALTTAB:
-		  if (record->event.pressed) {
-			  register_code(KC_LALT);
-			  register_code(KC_TAB);
-			  unregister_code(KC_TAB);
-		  }
-		  return false;
-	  case SALTTAB:
-		  if (record->event.pressed) {
-			  register_code(KC_LALT);
-			  register_code(KC_LSHIFT);
-			  register_code(KC_TAB);
-			  unregister_code(KC_TAB);
-			  unregister_code(KC_LSHIFT);
-		  }
-		  return false;
-	  case GQ:
-		  register_code(KC_LGUI);
-		  register_code(KC_Q);
-		  unregister_code(KC_Q);
-		  return false;
-	  default:
-		  unregister_cmd_after_cmdtab();
-	  } // END: CMD-TAB like keycodes
+			  register_code(KC_Q);
+			  unregister_code(KC_Q);
+			  return false;
+		  default:
+			  unregister_cmd_after_cmdtab();
+		  } // END: CMD-TAB like keycodes
+	  }
   }
   
   // RCMD & RALT doing smth usefull on single press:
   switch(keycode) {
-  case RCMD: // CXCJ_K_C[
+  case RCMD:
     if (record->event.pressed) {
       rcmd_timer = timer_read();
-      /* layer_on(RCMDL); */
       register_code(KC_RGUI);
     } else {
       unregister_code(KC_RGUI);
-      /* layer_off(RCMDL); */
-      if (timer_elapsed(rcmd_timer) < timer_threshold) {
-        register_code(KC_LCTRL);
-        register_code(KC_X);
-        unregister_code(KC_X);
-        register_code(KC_J);
-        unregister_code(KC_J);
-        unregister_code(KC_LCTRL);
-
-        register_code(KC_K);
-        unregister_code(KC_K);
-
-        register_code(KC_LCTRL);
-        register_code(KC_LBRC);
-        unregister_code(KC_LBRC);
-        unregister_code(KC_LCTRL);
-      }
+      if (timer_elapsed(rcmd_timer) < timer_threshold)
+		  send_string(SS_LCTRL("x") "k" SS_LCTRL("["));
     }
     return false;
-  case RALT: // CX_CJ_T_C[
-    if (record->event.pressed) {
-      rcmd_timer = timer_read();
-      /* layer_on(RCMDL); */
-      register_code(KC_RALT);
-    } else {
-      unregister_code(KC_RALT);
-      /* layer_off(RCMDL); */
-      if (timer_elapsed(rcmd_timer) < timer_threshold) {
-        register_code(KC_LCTRL);
-        register_code(KC_X);
-        unregister_code(KC_X);
-        register_code(KC_J);
-        unregister_code(KC_J);
-        unregister_code(KC_LCTRL);
-
-        register_code(KC_F);
-        unregister_code(KC_F);
-
-        register_code(KC_LCTRL);
-        register_code(KC_LBRC);
-        unregister_code(KC_LBRC);
-        unregister_code(KC_LCTRL);
-      }
-    }
-    return false;
-  } // end RCMD RALT
-
-  // layers manipulating events (language switch here):
-  if (record->event.pressed) {
-    switch(keycode) {
-    case MAC:
-      register_code(KC_A);
-      unregister_code(KC_A);
-      default_layer_set(1UL<<ENL);
-      return false;
-    case LSWITCH:
-      SEND_STRING(SS_LGUI(" "));
-      if (biton32(default_layer_state) == ENL) {
-        default_layer_set(1UL<<RUL);
-      } else {
-        default_layer_set(1UL<<ENL);
-      }
-      return false;
-    }
-  }
-
-  // just nmacros:
-  if (record->event.pressed) {
-    switch (keycode) {
-	case EQL_EQL: 
-		send_string("== ");
-		return 0;
-	case EQL_SPC:
-		send_string("= ");
-		return 0;
-	case ENDL_SPC:
-	  send_string(SS_DOWN(X_LGUI) SS_TAP(X_RIGHT) SS_UP(X_LGUI) " ");
+  case RALT:
+	  if (record->event.pressed) {
+		  rcmd_timer = timer_read();
+		  register_code(KC_RALT);
+	  } else {
+		  unregister_code(KC_RALT);
+		  if (timer_elapsed(rcmd_timer) < timer_threshold)
+			  send_string(SS_LCTRL("x") "f" SS_LCTRL("["));
+	  }
 	  return false;
-	case RT_SPC:
-	  send_string(SS_TAP(X_RIGHT) " ");
- 	  return false;
-	case RT2_SPC:
-	  send_string(SS_TAP(X_RIGHT) SS_TAP(X_RIGHT) " ");
- 	  return false;
-    case SCLSPC:
-		SEND_STRING("; ");
-		return false;
-    case CCS:
-		SEND_STRING(SS_DOWN(X_LGUI) SS_TAP(X_RIGHT) SS_UP(X_LGUI) ";");
-		return false;
-    case PYBLOCK:
-		SEND_STRING(SS_DOWN(X_LGUI) SS_TAP(X_RIGHT) SS_UP(X_LGUI) ":" SS_TAP(X_ENTER));
-		return false;
-    case CBLOCK:
-		SEND_STRING(SS_DOWN(X_LGUI) SS_TAP(X_RIGHT) SS_UP(X_LGUI) " ");
-    case BL_BRACES:
-		SEND_STRING("{}" SS_TAP(X_LEFT) SS_TAP(X_ENTER) SS_TAP(X_UP) SS_DOWN(X_LGUI) SS_TAP(X_RIGHT) SS_UP(X_LGUI) SS_TAP(X_ENTER) SS_TAP(X_TAB));
-      return false;
-    case BRACES:
-      SEND_STRING("{}" SS_TAP(X_LEFT));
-      return false;
-    case PARENS:
-      SEND_STRING("()" SS_TAP(X_LEFT));
-      return false;
-    case BRACKS:
-		SEND_STRING("[]" SS_TAP(X_LEFT));
-		return false; 
-    case BRACKS_RU:
-		SEND_STRING("~`" SS_TAP(X_LEFT));
-		return false; 
-    case QUOTES:
-		SEND_STRING("\"\"" SS_TAP(X_LEFT));
-      return false;
-    case ALTQUO:
-      SEND_STRING(SS_LALT("`"));
-      return false;
-    case CC_PLS:
-      SEND_STRING(SS_LCTRL("c") "+");
-      return false;
-    case CC_MIN:
-      SEND_STRING(SS_LCTRL("c") "-");
-      return false;
-    case CXCS:
-      SEND_STRING(SS_LCTRL("xs"));
-      return false;
-    case CX_CX:
-		SEND_STRING(SS_LCTRL("x") SS_LCTRL("x"));
-      return false;
-    case CX_G:
-      SEND_STRING(SS_LCTRL("x") "g");
-      return false;
-    case CX_Z:
-      SEND_STRING(SS_LCTRL("x") "z");
-      return false;
-    case CX_F:
-      SEND_STRING(SS_LCTRL("x") "f");
-      return false;
-    case CX_CC:
-      SEND_STRING(SS_LCTRL("xc"));
-      return false;
-    case CX_CF:
-      SEND_STRING(SS_LCTRL("xf"));
-      return false;
-    case CX_O:
-		SEND_STRING(SS_LCTRL("x") "o");
-      return false;
-	case CX_B:
-      SEND_STRING(SS_LCTRL("x") "b");
-      return false;
-	case CX_K:
-      SEND_STRING(SS_LCTRL("x") "k");
-      return false;
-    case CX_0:
-      SEND_STRING(SS_LCTRL("x") "0");
-      return false;
-    case CX_1:
-      SEND_STRING(SS_LCTRL("x") "1");
-      return false;
-    case CX_3:
-      SEND_STRING(SS_LCTRL("x") "3");
-      return false;
-    case M0_CK:
-      SEND_STRING(SS_LALT("0") SS_LCTRL("k"));
-      return false;
-    case CXCJ_0:
-      SEND_STRING(SS_LCTRL("xj") "0");
-      return false;
-    case CXCJ_B:
-      SEND_STRING(SS_LCTRL("xj") "b");
-      return false;
-    case CXCJ_CC:
-      SEND_STRING(SS_LCTRL("xjc"));
-      return false;
-    case CXCJ_D:
-      SEND_STRING(SS_LCTRL("xj") "d");
-      return false;
-    case CXCJ_CD:
-      SEND_STRING(SS_LCTRL("xjd"));
-      return false;
-    case CXCJ_SD:
-      SEND_STRING(SS_LCTRL("xj") "D");
-      return false;
-    case CXCJ_MD:
-      SEND_STRING(SS_LCTRL("xj") SS_LALT("d"));
-      return false;
-    case CXCJ_T:
-      SEND_STRING(SS_LCTRL("xj") "t");
-      return false;
-    case CXCJ_CT:
-      SEND_STRING(SS_LCTRL("xjt"));
-      return false;
-    case CXCJ_MT:
-      SEND_STRING(SS_LCTRL("xj") SS_LALT("t"));
-      return false;
-    case CX_P:
-      SEND_STRING(SS_LCTRL("x") "p");
-      return false;
-    case CX_CP:
-      SEND_STRING(SS_LCTRL("xp"));
-      return false;
-    case CX_RBRC:
-      SEND_STRING(SS_LCTRL("x")"}");
-      return false;
-    case CX_LBRC:
-      SEND_STRING(SS_LCTRL("x")"{");
-      return false;
-    case COM_SPC:
-	  SEND_STRING(", ");
-      return false;
-	case COM_SPC_RU:
-		send_string("? ");
-		return 0;
+  case _UP:
+	  if (record->event.pressed) {
+		  if (timer_elapsed(esc_promise_timer) < oneshot_threshold) {
+			  unregister_code(_LGUI);
+			  send_string(SS_TAP(X_ESCAPE));
+		  }
+	  }
+	  return 1;
+  case _DN:
+	  if (record->event.pressed) {
+		  if (timer_elapsed(esc_promise_timer) < oneshot_threshold) {
+			  unregister_code(_LGUI);
+			  send_string(SS_TAP(X_ESCAPE));
+		  }
+	  }
+	  return 1;
 }
-    return true;
+
+  if (record->event.pressed) {
+	  switch(keycode) {
+	  case C_ENT:
+		  send_string(SS_LCTRL(SS_TAP(X_ENTER)) SS_TAP(X_ENTER));
+		  return 0;
+	  case COUT:
+		  send_string(" << ");
+		  return 0;
+	  case CIN:
+		  send_string(" >> ");
+		  return 0;
+	  case NAMESPACE:
+		  send_string("::");
+		  return 0;
+	  case PLUSPLUS:
+		  send_string("++");
+		  return 0;
+	  }
+  }
+  
+  if (record->event.pressed) {
+	  switch(keycode) {
+	  case MOD_SWITCH:
+		  mod ^= 1;
+		  return 0;
+	  case EQL_EQL: 
+		  send_string("== ");
+		  return 0;
+	  case EQL_SPC:
+		  send_string("= ");
+		  return 0;
+	  case ENDL_JOKER:
+		  send_string(SS_DOWN(X_LGUI) SS_TAP(X_RIGHT) SS_UP(X_LGUI) ";");
+		  endl_joker = 1;
+		  endl_joker_timer = timer_read();
+		  return false;
+	  case RT_SPC:
+		  send_string(SS_TAP(X_RIGHT) " ");
+		  rt_spc = 1;
+		  rt_spc_timer = timer_read();
+		  return false;
+	  case RT2_SPC:
+		  send_string(SS_TAP(X_RIGHT) SS_TAP(X_RIGHT) " ");
+		  return false;
+	  case SCLSPC:
+		  SEND_STRING("; ");
+		  return false;
+	  case CCS:
+		  SEND_STRING(SS_DOWN(X_LGUI) SS_TAP(X_RIGHT) SS_UP(X_LGUI) ";");
+		  return false;
+	  case PYBLOCK:
+		  SEND_STRING(SS_DOWN(X_LGUI) SS_TAP(X_RIGHT) SS_UP(X_LGUI) ":" SS_TAP(X_ENTER));
+		  return false;
+	  case CBLOCK:
+		  SEND_STRING(SS_DOWN(X_LGUI) SS_TAP(X_RIGHT) SS_UP(X_LGUI) " ");
+	  case BL_BRACES:
+		  SEND_STRING("{}" SS_TAP(X_LEFT) SS_TAP(X_ENTER) SS_TAP(X_UP) SS_DOWN(X_LGUI) SS_TAP(X_RIGHT) SS_UP(X_LGUI) SS_TAP(X_ENTER) SS_TAP(X_TAB));
+		  return false;
+	  case BRACES:
+		  SEND_STRING("{}" SS_TAP(X_LEFT));
+		  return false;
+	  case PARENS:
+		  SEND_STRING("()" SS_TAP(X_LEFT));
+		  return false;
+	  case BRACKS:
+		  SEND_STRING("[]" SS_TAP(X_LEFT));
+		  return false; 
+	  case ABRACKS:
+		  SEND_STRING("<>" SS_TAP(X_LEFT));
+		  return false; 
+	  case BRACKS_RU:
+		  SEND_STRING("~`" SS_TAP(X_LEFT));
+		  return false; 
+	  case QUOTES:
+		  SEND_STRING("\"\"" SS_TAP(X_LEFT));
+		  return false;
+	  case ALTQUO:
+		  SEND_STRING(SS_LALT("`"));
+		  return false;
+	  case CC_PLS:
+		  SEND_STRING(SS_LCTRL("c") "+");
+		  return false;
+	  case CC_MIN:
+		  SEND_STRING(SS_LCTRL("c") "-");
+		  return false;
+	  case CXCS:
+		  SEND_STRING(SS_LCTRL("xs"));
+		  return false;
+	  case CX_CF:
+		  SEND_STRING(SS_LCTRL("xf"));
+	 	  return false;
+	  case CX_O:
+		  SEND_STRING(SS_LCTRL("x") "o");
+		  return false;
+	  case CX_B:
+		  SEND_STRING(SS_LCTRL("x") "b");
+		  return  false;
+	  case CX_K:
+		  SEND_STRING(SS_LCTRL("x") "k");
+		  return false;
+	  case CX_0:
+		  SEND_STRING(SS_LCTRL("x") "0");
+		  return false;
+	  case CX_1:
+		  SEND_STRING(SS_LCTRL("x") "1");
+		  return false;
+	  case CX_3:
+		  SEND_STRING(SS_LCTRL("x") "3");
+		  return false;
+	  case M0_CK:
+		  SEND_STRING(SS_LALT("0") SS_LCTRL("k"));
+		  return false;
+	  case CXCJ_0:
+		  SEND_STRING(SS_LCTRL("xj") "0");
+		  return false;
+	  case CXCJ_B:
+		  SEND_STRING(SS_LCTRL("xj") "b");
+		  return false;
+	  case CXCJ_CC:
+		  SEND_STRING(SS_LCTRL("xjc"));
+		  return false;
+	  case CXCJ_D:
+		  SEND_STRING(SS_LCTRL("xj") "d");
+		  return false;
+	  case CXCJ_CD:
+		  SEND_STRING(SS_LCTRL("xjd"));
+		  return false;
+	  case CX_P:
+		  SEND_STRING(SS_LCTRL("x") "p");
+		  return false;
+	  case CX_CP:
+		  SEND_STRING(SS_LCTRL("xp"));
+		  return false;
+	  case CX_RBRC:
+		  SEND_STRING(SS_LCTRL("x")"}");
+		  return false;
+	  case CX_LBRC:
+		  SEND_STRING(SS_LCTRL("x")"{");
+		  return false;
+	  case COM_SPC:
+		  SEND_STRING(", ");
+		  return false;
+	  case COM_SPC_RU:
+		  send_string("? ");
+		  return 0;
+	  }
   }
 
-/*   if (SMETAL == biton32(layer_state) && keycode != OSL_SYM && osl_sym_another_pressed == 1) { */
-/*     action_t action = store_or_get_action(record->event.pressed, record->event.key); */
-/*     dprint("ACTION: "); debug_action(action); */
-/* #ifndef NO_ACTION_LAYER */
-/*     dprint(" layer_state: "); layer_debug(); */
-/*     dprint(" default_layer_state: "); default_layer_debug(); */
-/* #endif */
-/*     dprintln(); */
-
-/*     process_action(record, action); */
-
-/* *   }  */
- 
   return true;
 }
-
-
-void matrix_scan_user(void) {
-	if (biton32(layer_state) == REFACT_L) {
-		if ((!oneshot_down && oneshot_fired) ||
-			(!oneshot_down && timer_elapsed(oneshot_timer) > oneshot_threshold)) {
-			layer_off(REFACT_L);
-		}
-	}
-}
-
-void keyboard_post_init_user(void) {
-  // Call the post init code.
-	rgblight_enable_noeeprom(); // enables Rgb, without saving settings
-	/* rgblight_sethsv_noeeprom(250, 200, 100); // sets the color to teal/cyan without saving */
-	rgblight_mode_noeeprom(rgblight_mode_current); // sets mode to Fast breathing without saving
-	rgblight_disable_noeeprom();
-}
-
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = 
 {
 
 	LAYOUT_all
-	(_F2,              LSWITCH, _ESC,    S(_MIN), OSL_IDE, S(_5),   _______, S(_EQL), _B,      _MIN,    OSLBM,    G(S(_4)),G(S(_3)),_NO,     S(_F10),
-	 SSHIFT,           CAPS,    OSL_SYM, _O,      _DOT,    LEADER,           _Y,      _G,      _C,      _R,      _F,      _K,      _SLS,    S(A(_F10)),
-	 OSLNM,            _P,      _A,      _E,      _I,      _BSP,             _L,      _H,      _T,      _N,      _S,      OSL_REF,           _TAB,
-	 _LSFT,    _A,     _MIN,    _Z,      _Q,      _U,      _TAB,             _D,      _M,      _W,      _V,      _X,      _J,      C(A(_Y)),_UP,
-	 _LCTL,                     _LALT,   RALT,             _SPC,   OSLEM,    MACMETA, RCMD,             _VDN,             _VUP,    MACMETA, _SPC),
+	(_F2,              LSWITCH, _ESC,    S(_MIN), OSL_IDE, S(_5),   _______, S(_EQL), _B,      _Y,    OSL_BRA,   _J,      G(S(_4)),_NO,     S(_F10),
+	 SSHIFT,           CAPS,    OSL_SYM, _O,      _DOT,    LEADER,           _MIN,    _G,      _C,      _R,      _F,      _K,      _SLS,    S(A(_F10)),
+	 OSL_NUM,          _P,      _A,      _E,      _I,      _BSP,             _L,      _H,      _T,      _N,      _S,      OSL_REF,           _ENT,
+	 _LSFT,    _A,     _J,      _Q,      _Q,      _U,      _TAB,             _D,      _M,      _W,      _V,      _X,      _Z,      C(A(_Y)),_UP,
+	 _LCTL,                     _LGUI,   RALT,             _SPC,   OSL_EDI,  MACMETA, RCMD,             _VDN,             _VUP,    MACMETA, _SPC),
 
 	LAYOUT // -ru_l
 	(_______,          _______, _______, _______, _______, _______, _______, _______, _COM,    _______, _______, _______, _______, _______, _______,
 	 _______,          _______, _______, _J,      _SLS,    _M,               _Q,      _U,      _Z,      _H,      _A,      _P,      _RBR,    _O,
 	 _______,          _G,      _F,      _T,      _B,      _BSP,             _K,      _R,      _N,      _Y,      _C,      _W,               _LBR,
-	 _DOT, _______,    _QUO,    _I,      _SCLN,   _E,      _S,               _L,      _V,      _D,      _X,      _A,               _______, _______,
+	 _DOT, _______,    _QUO,    _I,      _SCL,    _E,      _S,               _L,      _V,      _D,      _X,      _A,               _______, _______,
 	 _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
- 
+
 	LAYOUT // _os_layer
-	(DF(1),            _______, _F17,    _F18,    _______, _______, _______, _______, G(_LBR), C(S(_TAB)),C(_TAB),G(_W),  G(_Z),   _______, _______,
-	 WIN,              _______, C(_G),   _ESC,    _F15,    _______,          G(_R),   G(_GRV), SCMDTAB, CMDTAB,  SALTTAB, G(_RBR),  _______,_______,
-	 _______,          _______, CX_P,    CX_CP, GACS(_SPC),G(S(_P)),         G(S(_P)),G(_L),   G(_C),   G(_V),   G(_X),   GQ,               _______,
-	 _______, _______, _______, _______, _______, _______, _______,          _______, G(_C),   _______, _______, _______,          _______, RGB_TOG,
+	(MOD_SWITCH,       _______, _F17,    _F18,    _______, _______, _______, _______, G(_W),   G(_LBR), C(_TAB), G(_W),   G(_Z),   _______, _______,
+	 WIN,              _______, C(_G),   _ESC,    _F15,    _______,       G(A(S(_C))),G(S(_P)),C(S(_TAB)),C(_TAB),G(_GRV),G(_RBR), _______, _______,
+	 _______,          G(_X),   G(_V),   G(_C), GACS(_SPC),G(S(_P)),         A(G(_C)),CMDTAB,  SCMDTAB,G(A(_C)), G(A(S(_C))),GQ,             _______,
+	 _______, _______, G(_A),   _______, _______, _______, _______,          _______, G(_W),   _______, _______, _______,          _______, RGB_TOG,
 	 _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
 
-	LAYOUT // -nmeta_l
+	LAYOUT // _numbers_layer
 	(_______,          _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
-	 _______,          _______, _______, _______, _______, _______,          _______, _______, _0,      _9,      _______, _______, _______, _______,
-	 _______,          _______, _______, _______, _______, _______,          _6,      _1,      _2,      _3,      _4,      _5,               _______,
+	 _______,          _______, _______, _______, COUT,    CIN,              NAMESPACE,COUT,   _0,      _9,      CIN, _______, _______, _______,
+	 _______,          _______, _______, _______, NAMESPACE,_______,         _6,      _1,      _2,      _3,      _4,      _5,               _______,
 	 _______, _______, _______, _______, _______, _______, _______,          _7,      _8,      _______, CC_PLS,  CC_MIN,  _______, _______,
-	 _______,                   _______, _______,          CBLOCK, _______, PYBLOCK,           _______, _______,          _______, _______, _______),
+	 _______,                   _______, _______,          SCLSPC, _______, CCS,               _______, _______,          _______, _______, _______),
 
-	LAYOUT // _editing_layer
-	(_______,          _______, _______, _______, GACS(_N),_______, _______, _BSP,    _______, C(G(_DN)),C(G(_UP)),C(_K), _______, _______, _______,
-	 LGUI,             C(S(_K)),_LGUI,   G(_Z),   G(_BSP), G(S(_D)),         C(A(G(_5))),_PGDN,_DN,     _UP,     _PGUP,   GACS(_P),_______, _______,
-	 G(S(_D)),         G(_X),   G(_V),   G(_C),   G(_SLS), _______,          G(_LT),  A(_LT),  _RT,     A(_RT),  G(_RT),  _DEL,             _SPC,
-	 G(_X),   _______, CC_PLS,  CC_MIN,  A(_U), C(A(_BSL)),_______,          A(_W),   _LT,     G(_BSP), CTA(_Y), C(_K),            A(_BSL), _______, 
+	LAYOUT_all // _editing_layer
+	(TEST,             _______, RALT(_N),RALT(_P),G(_UP),  G(_DN),  _______, G(_LBR),    G(_RBR), C(G(_DN)),C(G(_UP)),_ESC,_______, _______, _______,
+	 _______,          G(_X),   JOKER,   G(_Z),   G(_BSP), G(_O),            C(A(G(_5))),_PGDN,_DN,     _UP,     _PGUP,   GACS(_P),_______, _______,
+	 G(S(_D)),         G(_BSP), G(_V),   G(_C),   G(_SLS), _______,          G(_LT),  A(_LT),  _RT,     A(_RT),  G(_RT),  _DEL,             G(_UP),
+	 G(_X),   _______, CC_PLS,  CC_MIN,  A(_U), C(A(_BSL)),_______,          A(_W),   _LT, A(S(_LBR)),A(S(_RBR)),C(_K),   G(_BSP), A(_BSL), _______, 
 	 _______,                   _______, _______,          _BSP,    _BSP,    _______,          _______, _______,          _______, _______, _______),
 
 	LAYOUT // _selection_layer
@@ -943,10 +1008,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 
 	LAYOUT // _symbols_layer
 	(_______,          _______, _______, _______, _______, _______, _______, _LBR,    S(_GRV), _QUO,    _GRV,    _RBR,    _______, _______, _______,
-	 _______,          _______, CCS,     ENDL,    _BSL,    S(_BSL),          S(_6),   S(_COM), QUOTES,  S(_QUO), S(_DOT), _BSL,    _______, _______,
-	 _______,          S(_2),   _______, _______, LSWITCH, S(_1),            _SLS,    S(_SCLN),S(_7),   S(_EQL), S(_4),   S(_3),            _______,
+	 _______,          _______, CCS,     ENDL,    _BSL,    S(_BSL),          S(_6),   S(_SCL), QUOTES,  S(_QUO), S(_DOT), _BSL,    _______, _______,
+	 _______,          S(_2),   _______, _______, LSWITCH, S(_1),            _SLS,    PARENS,  S(_7),   S(_EQL), S(_4),   S(_3),            _______,
 	 _______, _______, _______, _______, _______, _______, _______,          C(A(_R)),C(A(_S)),C(_W),   S(_8),   S(_SLS),          _______, _______,
-	 _______,                   _______, _______,          RT_SPC,  RT2_SPC, ENDL_SPC,         _______, _______,          _______, _______, _______),
+	 _______,                   _______, _______,          RT_SPC,  RT2_SPC, ENDL_JOKER,         _______, _______,          _______, _______, _______),
    
 	LAYOUT // _ru_symbols_layer
 	(_______,          _______, _______, _______, _______, _______, _______, _______, _______, S(_GRV), _GRV,    _______,  _______, _______, _______,
@@ -956,11 +1021,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 	 _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
 
 	LAYOUT // _brackets_layer
-	(_______,          _______, _______, S(_LBR), BRACES,  S(_RBR), _______, _LBR,    _______, BL_BRACES,_COM,   _RBR,    _______, _______, _______,
-	 _______,          _______, S(_9),   PARENS,   S(_0),  CBLOCK,           S(_6),   S(_COM), _MIN,    S(_QUO), S(_DOT), S(_7),   _______,  _______,
-	 _______,          C(_ENT), _LBR,    BRACKS,  ADVANCE, _RBR,             G(_ENT), G(_ENT), _______, S(_EQL), S(_4),   S(_3),           _______,
-	 _______, _______, _______, _______, _______, _______, _______,          LCTL(_R),CTA(_S), LCTL(_W),S(_8)   ,S(_SLS),          _______, _______,
-	 _______,                   _______, _______,          COM_SPC, ENDSPC,  G(_ENT),          _______, _______,          _______, _______, _______),
+	(_______,          _______, _______, S(_LBR), BRACES,  S(_RBR), _______, _LBR,    _______, CBLOCK,  _COM,    PYBLOCK, _______, _______, _______,
+	 _______,          S(_0),   S(_9),   ABRACKS, S(_COM), S(_DOT),          S(_6),   G(_P),   _MIN,    S(_QUO), PYBLOCK, PYBLOCK, _______, _______,
+	 C_ENT,            _RBR,    _LBR,    BRACKS,  G(_ENT), S(_ENT),          G(_P),   G(S(_P)),_______, S(_EQL), S(_4),   S(_3),           _______,
+	 _______, _______, _______, _______, _______, C(_ENT), _______,          LCTL(_R),CTA(_S), LCTL(_W),S(_8)   ,S(_SLS),          _______, _______,
+	 _______,                   _______, _______,          COM_SPC, C(_ENT), G(_ENT),          _______, _______,          _______, _______, _______),
 
 	LAYOUT // _ru_brackets_layer
 	(_______,          _______, _______, _______, _______, _______, _______, _______, _______, _______, S(_SLS), _______, _______, _______, _______,
@@ -969,14 +1034,14 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 	 _______, _______, _______, _______, _______, _______, _______,          _______, _______, _______, _______, _______, _______, _______,
 	 _______,                   _______, _______,        COM_SPC_RU,_______, _______,          _______, _______,          _______, _______, _______),
 
-	LAYOUT // _control_layer
-	(_______,          _______, _______, _______, _SCLN,   _______, _______, _______, CX_K,    CX_CF,   CX_B,    CX_3,    CX_RBRC, _______, CXCJ_0,
-	 _______,          _______, _______, _______, _______, S(_F6),           CX_Z,    CX_G,    CX_O,    CX_1,    GACS(_G),CX_0,    _______, CX_LBRC,
-	 _______,          _______, _______, _______, _______, A(S(_1)),         A(S(_SCLN)),A(_X),S(_F10), CX_Z,    CXCS,    S(A(_F10)),       G(_F2),
-	 _______, _______, _______, _______, _______, _______, _______,          C(A(S(_5))),CXCJ_D,CXCJ_CD,CXCJ_CC, CXCJ_SD, CX_CC,   _______,
-	 _______,                   _______, _______,          SCLSPC,  ENDSPC,  CCS,              _______, _______,          _______, RGB_HUI, RGB_HUD),
+	LAYOUT // _ide_layer
+	(_______,          _______, _______, _______, _SCL,    _______, _______, _______, CX_K,    G(_P),   G(S(_E)),CX_3,    CX_RBRC, _______, CXCJ_0,
+	 _______,          _______, _______, _______, _______, S(_F6),           CX_G,    G(_L),   CX_O,    CX_1,    GACS(_G),CX_0,    _______, CX_LBRC,
+	 _______,          _______, _______, _______, _______, A(S(_1)),         A(S(_SCL)),G(S(_P)),S(_F10), CX_Z,    G(_S),   S(A(_F10)),       G(_F2),
+	 _______, _______, _______, _______, _______, _______, _______,          G(_L),C(A(S(_5))),CXCJ_CD,CXCJ_CC, CXCJ_SD, CX_CC,   _______,
+	 _______,                   _______, _______,          SCLSPC,  SCLSPC,  CCS,              _______, _______,          _______, RGB_HUI, RGB_HUD),
 
-	LAYOUT // _refact_layer
+	LAYOUT // _refactoring_layer
 	(_______,          _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
 	 _______,          _______, _______, _______, _______, _______,          _______, _______, _______, _______, _______, _______, _______, _______,
 	 _______,          G(_X),   _______, _______, _______, _A,               _C,      _______, _______, _______, _______, EQL_EQL,          _______,
@@ -984,7 +1049,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 	 _______,                   _______, _______,          EQL_SPC, _______, _______,          _______, _______,          _______, _______, _______),
 
 };
-
 
 enum function_id {
                   SHIFT_ESC,
