@@ -1,0 +1,23 @@
+---
+LCTL: [control]
+LSFT: [shift]
+LALT: [option]
+LGUI: [command]
+# LCMD(kc) LGUI(kc)
+# LWIN(kc) LGUI(kc)
+# RCTL(kc) (QK_RCTL | (kc))
+# RSFT(kc) (QK_RSFT | (kc))
+# RALT(kc) (QK_RALT | (kc))
+# ALGR(kc) RALT(kc)
+# RGUI(kc) (QK_RGUI | (kc))
+# RCMD(kc) RGUI(kc)
+# RWIN(kc) RGUI(kc)
+
+# HYPR(kc) (QK_LCTL | QK_LSFT | QK_LALT | QK_LGUI | (kc))
+# MEH(kc)  (QK_LCTL | QK_LSFT | QK_LALT | (kc))
+# LCAG(kc) (QK_LCTL | QK_LALT | QK_LGUI | (kc))
+SGUI: [command, shift]
+# SCMD(kc) SGUI(kc)
+# SWIN(kc) SGUI(kc)
+# LCA(kc)  (QK_LCTL | QK_LALT | (kc))
+

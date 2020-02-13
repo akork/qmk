@@ -1,0 +1,197 @@
+--- # defines in tmk_core/common/keycode.h
+  KC_A: a
+  KC_B: b
+  KC_C: c
+  KC_D: d
+  KC_E: e
+  KC_F: f
+  KC_G: g
+  KC_H: h
+  KC_I: i
+  KC_J: j
+  KC_K: k
+  KC_L: l
+  KC_M: m
+  KC_N: n
+  KC_O: o
+  KC_P: p
+  KC_Q: q
+  KC_R: r
+  KC_S: s
+  KC_T: t
+  KC_U: u
+  KC_V: v
+  KC_W: w
+  KC_X: x
+  KC_Y: y
+  KC_Z: z
+  KC_1: '1'
+  KC_2: '2'
+  KC_3: '3'
+  KC_4: '4'
+  KC_5: '5'
+  KC_6: '6'
+  KC_7: '7'
+  KC_8: '8'
+  KC_9: '9'
+  KC_0: '0'
+  KC_ENTER: return_or_enter
+  KC_ESCAPE: escape
+  KC_BSPACE: delete_or_backspace
+  KC_TAB: tab
+  KC_SPACE: spacebar
+  KC_MINUS: hyphen
+  KC_EQUAL: equal_sign
+  KC_LBRACKET: open_bracket
+  KC_RBRACKET: close_bracket
+  KC_BSLASH: backslash
+  KC_NONUS_HASH: non_us_pound
+  KC_SCOLON: semicolon
+  KC_QUOTE: quote
+  KC_GRAVE: grave_accent_and_tilde
+  KC_COMMA: comma
+  KC_DOT: period
+  KC_SLASH: slash
+  KC_CAPSLOCK: capslock
+  KC_F1: f1
+  KC_F2: f2
+  KC_F3: f3
+  KC_F4: f4
+  KC_F5: f5
+  KC_F6: f6
+  KC_F7: f7
+  KC_F8: f8
+  KC_F9: f9
+  KC_F10: f10
+  KC_F11: f11
+  KC_F12: f12
+  KC_PSCREEN: print_screen 
+  KC_SCROLLLOCK: scroll_lock
+  KC_PAUSE: pause
+  KC_INSERT: insert
+  KC_HOME: home
+  KC_PGUP: page_up
+  KC_DELETE: delete_forward
+  KC_END: end
+  KC_PGDOWN: page_down
+  KC_RIGHT: right_arrow
+  KC_LEFT: left_arrow
+  KC_DOWN: down_arrow
+  KC_UP: up_arrow
+  KC_NUMLOCK: keypad_num_lock
+  KC_KP_SLASH: keypad_slash
+  KC_KP_ASTERISK: keypad_asterisk
+  KC_KP_MINUS: keypad_hyphen
+  KC_KP_PLUS: keypad_plus
+  KC_KP_ENTER: keypad_enter
+  KC_KP_1: keypad_1
+  KC_KP_2: keypad_2
+  KC_KP_3: keypad_3
+  KC_KP_4: keypad_4
+  KC_KP_5: keypad_5
+  KC_KP_6: keypad_6
+  KC_KP_7: keypad_7
+  KC_KP_8: keypad_8
+  KC_KP_9: keypad_9
+  KC_KP_0: keypad_0
+  KC_KP_DOT: keypad_period
+  KC_NONUS_BSLASH: non_us_backslash
+  KC_APPLICATION: application 
+  KC_POWER: power
+  KC_KP_EQUAL: keypad_equal_sign
+  KC_F13: f13
+  KC_F14: f14
+  KC_F15: f15
+  KC_F16: f16
+  KC_F17: f17
+  KC_F18: f18
+  KC_F19: f19
+  KC_F20: f20
+  KC_F21: f21
+  KC_F22: f22
+  KC_F23: f23
+  KC_F24: f24
+  KC_EXECUTE: execute
+  KC_HELP: help
+  KC_MENU:
+  KC_SELECT:
+  KC_STOP:
+  KC_AGAIN:
+  KC_UNDO:
+  KC_CUT:
+  KC_COPY:
+  KC_PASTE:
+  KC_FIND:
+  KC__MUTE:
+  KC__VOLUP:
+  KC__VOLDOWN:
+  KC_LOCKING_CAPS:
+  KC_LOCKING_NUM:
+  KC_LOCKING_SCROLL:
+  KC_KP_COMMA: keypad_comma
+  KC_KP_EQUAL_AS400:
+  KC_INT1:
+  KC_INT2:
+  KC_INT3:
+  KC_INT4:
+  KC_INT5:
+  KC_INT6:
+  KC_INT7:
+  KC_INT8:
+  KC_INT9:
+  KC_LANG1:
+  KC_LANG2:
+  KC_LANG3:
+  KC_LANG4:
+  KC_LANG5:
+  KC_LANG6:
+  KC_LANG7:
+  KC_LANG8:
+  KC_LANG9:
+  KC_ALT_ERASE:
+  KC_SYSREQ:
+  KC_CANCEL:
+  KC_CLEAR:
+  KC_PRIOR:
+  KC_RETURN:
+  KC_SEPARATOR:
+  KC_OUT:  
+  KC_OPER:
+  KC_CLEAR_AGAIN:
+  KC_CRSEL:
+  KC_EXSEL:
+# mods:
+  KC_LCTRL: left_control
+  KC_LSHIFT: left_shift
+  KC_LALT: left_option
+  KC_LGUI: left_command
+  KC_RCTRL: right_control
+  KC_RSHIFT: right_shift
+  KC_RALT: right_option
+  KC_RGUI: right_command
+  C: [control]
+  S: [shift]
+  G: [command]
+  A: [option]
+  LCTL: [control]
+  LSFT: [shift]
+  LALT: [option]
+  LGUI: [command]
+  LCMD: [command]
+  LWIN: [command]
+  RCTL: [control]
+  RSFT: [shift]
+  RALT: [option]
+  ALGR: [option]
+  RGUI: [command]
+  RCMD: [command]
+  RWIN: [command]
+  HYPR: [command, control, option, shift]
+  MEH: [control, shift, option]
+  LCAG: [control, option, command]
+  SGUI: [command, shift]
+  # SCMD(kc) SGUI(kc)
+  # SWIN(kc) SGUI(kc)
+  LCA: [control, option]
+
+    
