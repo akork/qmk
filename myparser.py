@@ -1,11 +1,7 @@
 # %%
-import mappings
-dir(mappings)
-# %%
 from io import StringIO
 import tokenize
 import json
-import mappings
 import yaml
 import re
 
@@ -120,10 +116,20 @@ def parse_source_file(filename):
 def parse_keymap():
     global keymap
     with open("map.yaml", 'r') as stream1,\
-         open('qmk_defines.yaml', 'r') as stream2:
+         open('qmk_defines.yaml', 'r') as stream2,\
+         open('ak-first-keymap.c', 'r') as stream3:
         try:
             keymap = yaml.safe_load(stream1)
             qmk_keymap = yaml.safe_load(stream2)
+            for line in stream3:
+                if match := re.search(r'^#define\s(.*)', line):
+                    str = match.group(1)
+                    if match := re.search(r'[\(\)]', str):
+                        continue
+                    str = str.split()
+                    qmk_keymap[str[0]] = str[1]
+                    # print(str)
+
         except yaml.YAMLError as exc:
             print(exc)
         # print(qmk_keymap)
@@ -139,29 +145,20 @@ def parse_keymap():
         # print(f'{keymap=}')
     return keymap
 
-if __name__ == '__main__':
-    # res = {}
-    # res['keycode'] = '' # put keycode key on first position
-    parse_keymap()
-    # print(keymap)
-    out = parse_source_file('ak-first-keymap.c')
-    print(len(out), out.keys())
-    id = 'karabiner'
-    print(out[id])
-    parsed = item_to_json(out[id]['keymap'][0])
-    print(parsed)
-    id = 'en'
-    print(out[id])
-    parsed = item_to_json(out[id]['keymap'][1])
-    print(parsed)
-    # res = to_json(src)
-    # parse_keymap()
-    # print(keymap)
-    # print(tree)
-    # print(res)
-    # print(len(res))
-    # parse_file('ak-first-keymap.c')
+def parse_defines():
+    with open('ak-first-keymap.c', 'r') as file:
+        for line in file:
+            if match := re.search(r'^#define\s(.*)', line):
+                str = match.group(1)
 
+                if match := re.search(r'[\(\)]', str):
+                    continue
+                str = str.split()
+                print(str)
+
+if __name__ == '__main__':
+    parse_keymap()
+    print(keymap)
 
 
 

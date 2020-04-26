@@ -1,4 +1,4 @@
-// -*- compile-command: "make dz60:ak-first:dfu" -*-
+/remote// -*- compile-command: "make dz60:ak-first:dfu" -*-
 
 
 // option + f12 terminal
@@ -15,6 +15,7 @@ enum custom_keycodes {
 					  PHONY,
 					  NEXT,
 					  NCOMMA,
+					  NCOLON,
 					  C_ENT,
 					  COUT,
 					  CIN,
@@ -110,6 +111,7 @@ enum custom_keycodes {
                       EENTER,
                       EEENTER,
                       PARENS,
+                      PARENS_ENDL,
                       BRACES,
                       BL_BRACES,
                       BRACKS,
@@ -336,35 +338,23 @@ static __attribute__ ((noinline)) void oneshot_check(int LR) {
 	}
 }
 
+static __attribute__ ((noinline))
+void oneshot_fired_check(uint16_t keycode, int LR, uint8_t layer_mask, int TRIG) {
+	if ((layer_mask << LR) & layer_state)
+			if (keycode != TRIG)
+				oneshot_fired = 1;
+}
+
 void matrix_scan_user(void) {
 	oneshot_check(NUM_LR);
 	oneshot_check(IDE_LR);
-	/* oneshot_check(EDI_LR); */
 	oneshot_check(REF_LR);
-	/* if (biton32(layer_state) == NUM_LR) { */
-	/* 	if ((!oneshot_down && oneshot_fired) || */
-	/* 		(!oneshot_down && timer_elapsed(oneshot_timer) > oneshot_threshold)) { */
-	/* 		layer_off(NUM_LR); */
-	/* 	} */
-	/* } */
-	/* if (biton32(layer_state) == IDE_LR) { */
-	/* 	if ((!oneshot_down && oneshot_fired) || */
-	/* 		(!oneshot_down && timer_elapsed(oneshot_timer) > oneshot_threshold)) { */
-	/* 		layer_off(IDE_LR); */
-	/* 	} */
-	/* } */
 	if (biton32(layer_state) == EDI_LR && !em_forced) {
 		if ((!oneshot_down && oneshot_fired) ||
 			(!oneshot_down && timer_elapsed(oneshot_timer) > oneshot_threshold)) {
 			layer_off(EDI_LR);
 		}
 	}
-	/* if (biton32(layer_state) == REF_LR) { */
-	/* 	if ((!oneshot_down && oneshot_fired) || */
-	/* 		(!oneshot_down && timer_elapsed(oneshot_timer) > oneshot_threshold)) { */
-	/* 		layer_off(REF_LR); */
-	/* 	} */
-	 /* } */
 	if (biton32(layer_state) == NEXT_LR) {
 		if ((!oneshot_next_down && oneshot_next_fired) ||
 			(!oneshot_next_down && timer_elapsed(oneshot_next_timer) > oneshot_next_threshold)) {
@@ -391,6 +381,8 @@ void matrix_scan_user(void) {
 		if (1UL << RU_LR & layer_state) {
 			send_string(SS_LGUI(" "));
 			layer_off(RU_LR);
+			layer_off(RU_BRA_LR);
+			layer_off(RU_SYM_LR);
 			ru_off = 0;
 		}
 	}
@@ -407,32 +399,20 @@ void matrix_scan_user(void) {
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     if (record->event.pressed) {
-		uint8_t layer = layer_switch_get_layer(record->event.key); // from which layer keycode flew
+		uint8_t layer = layer_switch_get_layer(record->event.key); // from which layer keycode flew in
+		oneshot_fired_check(keycode, NUM_LR, 1, OSL_NUM);
+		oneshot_fired_check(keycode, IDE_LR, 1, OSL_IDE);
+		oneshot_fired_check(keycode, REF_LR, 1, OSL_REF);
+		oneshot_fired_check(keycode, BRA_LR, 3, OSL_BRA);
+		oneshot_fired_check(keycode, SYM_LR, 3, OSL_SYM);
 		if ((1UL << SEL2_LR) & layer_state && layer == SEL2_LR)
 			sel_off = 1;
-		if (((3UL << BRA_LR) & layer_state))
-		    if (keycode != OSL_BRA)
-			    oneshot_fired = 1;
-		if (((3UL << SYM_LR) & layer_state))
-		    if (keycode != OSL_SYM)
-			    oneshot_fired = 1;
-		if (NUM_LR == biton32(layer_state)) {
-			if (keycode != OSL_NUM)
-				oneshot_fired = 1;
-		}
 		if (EDI_LR == biton32(layer_state) && !em_forced) {
 			if (keycode != OSL_EDI)
 			    oneshot_fired = 1;
 
 		}
-		if (biton32(layer_state) == REF_LR)
-			if (keycode != OSL_REF)
-				oneshot_fired = 1;
-		if (IDE_LR == biton32(layer_state)) {
-			if (keycode != OSL_IDE)
-				oneshot_fired = 1;
-		}
- 		if (rt_spc == 1 && timer_elapsed(rt_spc_timer) < joker_threshold) {
+		if (rt_spc == 1 && timer_elapsed(rt_spc_timer) < joker_threshold) {
 			/* if (keycode == MACMETA) { */
 			/* 	send_string(SS_TAP(X_BSPACE)); */
 			/* 	rt_spc = 0; */
@@ -532,10 +512,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 		}
 
 		if (keycode == LSWITCH) {
-			send_string(SS_LGUI(" "));
 			if (1UL << RU_LR & layer_state) {
-				layer_off(RU_LR);
+				ru_off = 1;
 			} else {
+				send_string(SS_LGUI(" "));
 				layer_on(RU_LR);
 			}
 			return 0;
@@ -847,6 +827,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 	  case NCOMMA:
 		  send_string(", ");
 		  return 0;
+	  case NCOLON:
+		  send_string(": ");
+		  return 0;
 	  case C_ENT:
 		  send_string(SS_LCTRL(SS_TAP(X_ENTER)) SS_TAP(X_ENTER));
 		  return 0;
@@ -908,6 +891,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 		  return false;
 	  case PARENS:
 		  SEND_STRING("()" SS_TAP(X_LEFT));
+		  return false;
+	  case PARENS_ENDL:
+		  SEND_STRING("(" SS_DOWN(X_LGUI) SS_TAP(X_RIGHT) SS_UP(X_LGUI) ")");
 		  return false;
 	  case BRACKS:
 		  SEND_STRING("[]" SS_TAP(X_LEFT));
@@ -1009,7 +995,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 
 	LAYOUT_all //%% plain:en
 	(_F2,              _LGUI,   _ESC,    S(_MIN), OSL_IDE, S(_5),   _______, S(_EQL), _B,      _Y,    OSL_BRA,   _J,      G(S(_4)),_NO,     S(_F10),
-	 STICKY_SEL,       OSM(MOD_LSFT),    OSL_SYM, _O,      _DOT,    KC_CAPSLOCK,          _MIN,    _G,      _C,      _R,      _F,      _K,      _SLS,    S(A(_F10)),
+	 STICKY_SEL, OSM(MOD_LSFT), OSL_SYM, _O,      _DOT,    NEXT,             _MIN,    _G,      _C,      _R,      _F,      _K,      _SLS,    S(A(_F10)),
 	 OSL_NUM,          _P,      _A,      _E,      _I,      _BSP,             _L,      _H,      _T,      _N,      _S,      OSL_REF,           _ENT,
 	 _LSFT,    _A,     _J,      _Q,      S(_2),   _U,      _TAB,             _D,      _M,      _W,      _V,      _X,      _Z,      C(A(_Y)),_UP,
 	 _LCTL,                     _LGUI,   RALT,             _SPC,   OSL_EDI,  MACMETA, RCMD,             _VDN,             _VUP,    MACMETA, _SPC),
@@ -1022,8 +1008,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 	 _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
 
 	LAYOUT_all //%% mod:os
-	(MOD_SWITCH,       _______, _F17,    _F18,    _______, _______, _______, _______, G(_W),   G(_LBR), C(_TAB), G(_W),   G(_Z),   _______, _______,
-	 WIN,              _______, C(_G),   _ESC,    _F15,    _______,       G(A(S(_C))),A(_TAB),C(S(_TAB)),C(_TAB),A(_TAB), G(_RBR), _______, _______,
+	(MOD_SWITCH,       _______, _F17,    _F18,    _______, _______, _______, _______, G(_W),   G(_LBR), G(A(_W)),G(_W),   G(_Z),   _______, _______,
+	 WIN,              _______, C(_G),   _ESC,    _F15,    _______,       G(A(S(_C))),A(_TAB),C(S(_TAB)),C(_TAB),A(S(_TAB)),G(_RBR), _______, _______,
 	 _______,          G(_X),   G(_V),   G(_C), GACS(_SPC),G(S(_P)),         CMDTAB2, CMDTAB,  SCMDTAB,G(A(_C)), G(A(S(_C))),GQ,             _______,
 	 _______, _______, G(_A),   _______, _______, _______, _______,          _______, G(_GRV), _______, _______, _______, _______, _______, RGB_TOG,
 	 _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
@@ -1036,7 +1022,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 	 _______,                   _______, _______,          SCLSPC, _______, CCS,               _______, _______,          _______, _______, _______),
 
 	LAYOUT_all //%% oneshot:edi
-	(TEST,             _______, RALT(_N),RALT(_P),G(_UP),  G(_DN),  _______, G(_LBR),    G(_RBR), C(G(_DN)),C(G(_UP)),_ESC,_______, _______, _______,
+	(TEST,             _______, RALT(_N),RALT(_P),G(_UP),  G(_DN),  _______, G(_LBR), C(G(_DN)),C(_DN), C(_UP),  C(G(_UP)),_ESC,   _______, _______,
 	 _______,          G(_X),   JOKER,   G(_Z),   G(_BSP), G(_O),            C(A(G(_5))),_PGDN,_DN,     _UP,     _PGUP,   HYPR(_P),_______, _______,
 	 G(S(_D)),         G(_BSP), G(_V),   G(_C),   G(_SLS), _______,          G(_LT),  A(_LT),  _RT,     A(_RT),  G(_RT),  _DEL,             G(_UP),
 	 G(_X),   _______, CC_PLS,  CC_MIN,  A(_U), C(A(_BSL)),_______,          A(_W),   _LT, A(S(_LBR)),A(S(_RBR)),C(_K),   G(_BSP), A(_BSL), _______,
@@ -1058,11 +1044,12 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 
 	LAYOUT_all //%% oneshot:sym
 	(_______,          _______, _______, _______, _______, _______, _______, _LBR,    S(_GRV), _QUO,    _GRV,    _RBR,    _______, _______, _______,
-	 _______,          _______, CCS,     NEXT,    _BSL,    S(_BSL),          S(_6),   S(_SCL), QUOTES,  S(_QUO), S(_DOT), _BSL,    _______, _______,
-	 _______,          S(_2),   _______, _______, LSWITCH, S(_1),            _SLS,    PARENS,  S(_7),   S(_EQL), S(_4),   S(_3),            _______,
-	 _______, _______, _______, _______, _______, _______, _______,          C(A(_R)),C(A(_S)),C(_W),   S(_8),   S(_SLS), _______, _______, _______,
+	 _______,          _______, CCS,     G(_F),   _BSL,    S(_BSL),          S(_6),   S(_SCL), QUOTES,  S(_QUO), S(_DOT), _BSL,    _______, _______,
+	 _______,          S(_2),   _______, _______, LSWITCH, S(_1),            BRACKS,  PARENS,  S(_7),   S(_EQL), S(_4),   S(_3),            _______,
+	 _______, _______, _______, _______, _______, _______, _______,          G(S(_G)),G(_G),   C(_W),   S(_8),   S(_SLS), _______, _______, _______,
 	 _______,                   _______, _______,          RT_SPC,  NEXT,    ENDL_JOKER,       _______, _______,          _______, _______, _______),
 
+	
 	LAYOUT_all //%% oneshot:sym_ru
 	(_______,          _______, _______, _______, _______, _______, _______, _______, _______, S(_GRV), _GRV,    _______, _______, _______, _______,
 	 _______,          _______, _______,G(_ENT),  _______, _______,          S(_6),   S(_COM), _EQL,    S(_QUO), S(_DOT), _SLS,    _______, _______,
@@ -1072,15 +1059,15 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 
 	LAYOUT_all //%% oneshot:next
 	(_______,          _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
-	 _______,          _______, _______, _______, _______, _______,          _______, _______, NCOMMA,  _______, _______, _______, _______, _______,
+	 _______,          _______, _______, _______, _______, _______,          _______, NCOLON,  NCOMMA,  _______, _______, _______, _______, _______,
 	 _______,          _______, _______, _______, _______, _______,          _______, _______, _______, _______, _______, _______,          _______,
 	 _______, _______, _______, _______, _______, _______, _______,          _______, _______, _______, _______, _______, _______, _______, _______,
 	 _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
 
 	LAYOUT_all //%% oneshot:bra
-	(_______,          _______, _______, S(_LBR), BRACES,  S(_RBR), _______, _LBR,    _______, CBLOCK,  _COM,    PYBLOCK, _______, _______, _______,
+	(_______,          _______,PARENS_ENDL,S(_LBR),BRACES, S(_RBR), _______, _LBR,    G(S(_O)),G(_O),   _COM,    PYBLOCK, _______, _______, _______,
 	 _______,          S(_0),   S(_9),   ABRACKS, S(_COM), S(_DOT),          S(_6),   G(_P),   _MIN,    S(_QUO), PYBLOCK, PYBLOCK, _______, _______,
-	 C_ENT,            _RBR,    _LBR,    BRACKS,  G(_ENT), S(_ENT),          G(_P),   G(S(_P)),_______, S(_EQL), S(_4),   S(_3),           _______,
+	 C_ENT,            _RBR,    _LBR,    C(_ENT), S(_ENT), A(_ENT),          G(S(_O)),G(S(_P)),_______, S(_EQL), S(_4),   S(_3),           _______,
 	 _______, _______, _______, _______, _______, C(_ENT), _______,          LCTL(_R),CTA(_S), LCTL(_W),S(_8)   ,S(_SLS), _______, _______, _______,
 	 _______,                   _______, _______,          COM_SPC, C(_ENT), G(_ENT),          _______, _______,          _______, _______, _______),
 
@@ -1093,8 +1080,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 
 	LAYOUT_all //%% oneshot:ide
 	(_______,          _______, _______, _______, _SCL,    _______, _______, _______, G(S(_W)),G(_P),   G(S(_E)),CX_3,    CX_RBRC, _______, CXCJ_0,
-	 _______,          _______, _______, _______, _______, S(_F6),           CX_G, G(C(S(_J))),CX_O,    CX_1,    G(S(_J)),HYPR(_G),_______, CX_LBRC,
-	 _______,          _______, _______, _______, _______, A(S(_1)),         A(S(_SCL)),G(S(_P)),S(_F10), CX_Z,    G(_S),   S(A(_F10)),       G(_F2),
+	 _______,          _______, _______, _______, _______, S(_F6),           CX_G, G(C(S(_J))),HYPR(_O),CX_1,    G(S(_J)),HYPR(_G),_______, CX_LBRC,
+	 _______,          _______, _______, _______, _______, A(S(_1)),         A(S(_SCL)),G(S(_P)),S(_F10), C(_ENT),G(_S),  S(A(_F10)),       G(_F2),
 	 _______, _______, _______, _______, _______, _______, _______,          G(_L),C(A(S(_5))),CXCJ_CD,CXCJ_CC,  CXCJ_SD, CX_CC,   _______, _______,
 	 _______,                   _______, _______,          SCLSPC,  SCLSPC,  CCS,              _______, _______,          _______, RGB_HUI, RGB_HUD),
 
@@ -1103,7 +1090,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 	 _______,          _______, _______, _______, _______, _______,          _______, _______, _______, _______, _______, _______, _______, _______,
 	 _______,          G(_U),   G(A(_B)),_F2,     _F12,    S(_F12),          _C,      _______, _______, _______, _______, EQL_EQL,          _______,
 	 _______, _______, _______, _______, _______, C(_MIN), _______,          _______, _______, _______, _______, _______, _______, _______, _______,
-	 _______,                   _______, _______,          EQL_SPC, _______, _______,          _______, _______,          _______, _______, _______),
+	 _______,                   _______, _______,          EQL_SPC, _EQL,    _______,          _______, _______,          _______, _______, _______),
 };
 
 enum function_id {
