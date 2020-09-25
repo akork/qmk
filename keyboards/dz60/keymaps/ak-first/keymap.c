@@ -1,4 +1,4 @@
-/remote// -*- compile-command: "make dz60:ak-first:dfu" -*-
+// -*- compile-command: "make dz60:ak-first:dfu" -*-
 
 
 // option + f12 terminal
@@ -1025,7 +1025,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 	(TEST,             _______, RALT(_N),RALT(_P),G(_UP),  G(_DN),  _______, G(_LBR), C(G(_DN)),C(_DN), C(_UP),  C(G(_UP)),_ESC,   _______, _______,
 	 _______,          G(_X),   JOKER,   G(_Z),   G(_BSP), G(_O),            C(A(G(_5))),_PGDN,_DN,     _UP,     _PGUP,   HYPR(_P),_______, _______,
 	 G(S(_D)),         G(_BSP), G(_V),   G(_C),   G(_SLS), _______,          G(_LT),  A(_LT),  _RT,     A(_RT),  G(_RT),  _DEL,             G(_UP),
-	 G(_X),   _______, CC_PLS,  CC_MIN,  A(_U), C(A(_BSL)),_______,          A(_W),   _LT, A(S(_LBR)),A(S(_RBR)),C(_K),   G(_BSP), A(_BSL), _______,
+	 G(_X),   _______, CC_PLS,  CC_MIN,  A(_U), C(A(_BSL)),_______,          G(_RT),  _LT, A(S(_LBR)),A(S(_RBR)),C(_K),   G(_BSP), A(_BSL), _______,
 	 _______,                   _______, _______,          _BSP,    _______, _______,          _______, _______,          _______, _______, _______),
 
 	LAYOUT_all //%% sticky:sel
