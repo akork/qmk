@@ -11,6 +11,7 @@
 
 enum custom_keycodes {
 					  TEST = SAFE_RANGE,
+                      SURPAR,
 					  STICKY_SEL,
 					  PHONY,
 					  NEXT,
@@ -60,7 +61,6 @@ enum custom_keycodes {
                       LALT,
                       RALT,
                       LCTL,
-                      LSFT,
                       RSFT,
                       _VIMRC,
                       CC_PLS,
@@ -259,7 +259,7 @@ enum {
 
 #define SS_RGUI(string) SS_DOWN(X_RGUI) string SS_UP(X_RGUI)
 
-static uint16_t timer, rcmd_timer, lctl_timer, lsft_timer, rsft_timer;
+static uint16_t timer, rcmd_timer;
 static const uint16_t timer_threshold = 250;
 static const uint16_t oneshot_threshold = 700, oneshot_next_threshold = 1500, joker_threshold = 2000;
 static uint8_t rgblight_mode_current = RGBLIGHT_MODE_KNIGHT + 1;
@@ -329,8 +329,8 @@ void increase_timer(void) {
 /* 	process_record(record); */
 /* } */
 
-static __attribute__ ((noinline)) void oneshot_check(int LR) {
-	if (biton32(layer_state) == LR) {
+static __attribute__ ((noinline)) void oneshot_check(int LR, uint8_t layer_mask) {
+	if ((layer_mask << LR) & layer_state) {
 		if ((!oneshot_down && oneshot_fired) ||
 			(!oneshot_down && timer_elapsed(oneshot_timer) > oneshot_threshold)) {
 			layer_off(LR);
@@ -346,15 +346,16 @@ void oneshot_fired_check(uint16_t keycode, int LR, uint8_t layer_mask, int TRIG)
 }
 
 void matrix_scan_user(void) {
-	oneshot_check(NUM_LR);
-	oneshot_check(IDE_LR);
-	oneshot_check(REF_LR);
-	if (biton32(layer_state) == EDI_LR && !em_forced) {
-		if ((!oneshot_down && oneshot_fired) ||
-			(!oneshot_down && timer_elapsed(oneshot_timer) > oneshot_threshold)) {
-			layer_off(EDI_LR);
-		}
-	}
+	oneshot_check(NUM_LR, 1);
+	oneshot_check(IDE_LR, 1);
+	oneshot_check(REF_LR, 1);
+	oneshot_check(EDI_LR, 1);
+	/* if (biton32(layer_state) == EDI_LR && !em_forced) { */
+		/* if ((!oneshot_down && oneshot_fired) || */
+			/* (!oneshot_down && timer_elapsed(oneshot_timer) > oneshot_threshold)) { */
+			/* layer_off(EDI_LR); */
+		/* } */
+	/* } */
 	if (biton32(layer_state) == NEXT_LR) {
 		if ((!oneshot_next_down && oneshot_next_fired) ||
 			(!oneshot_next_down && timer_elapsed(oneshot_next_timer) > oneshot_next_threshold)) {
@@ -407,11 +408,14 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 		oneshot_fired_check(keycode, SYM_LR, 3, OSL_SYM);
 		if ((1UL << SEL2_LR) & layer_state && layer == SEL2_LR)
 			sel_off = 1;
-		if (EDI_LR == biton32(layer_state) && !em_forced) {
-			if (keycode != OSL_EDI)
-			    oneshot_fired = 1;
+		oneshot_fired_check(keycode, EDI_LR, 1, OSL_EDI);
 
-		}
+		/* if (EDI_LR == biton32(layer_state) && !em_forced) { */
+			/* if (keycode != OSL_EDI) */
+			    /* oneshot_fired = 1; */
+		/* } */
+
+        /* RT_SPC */
 		if (rt_spc == 1 && timer_elapsed(rt_spc_timer) < joker_threshold) {
 			/* if (keycode == MACMETA) { */
 			/* 	send_string(SS_TAP(X_BSPACE)); */
@@ -421,7 +425,8 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 		} else {
 			rt_spc = 0;
 		}
-		if (endl_joker == 1 && timer_elapsed(endl_joker_timer) < joker_threshold) {
+		/* ENDL_JOKER */
+        if (endl_joker == 1 && timer_elapsed(endl_joker_timer) < joker_threshold) {
 			if (keycode == OSL_BRA) {
 				send_string(SS_TAP(X_BSPACE) ",");
 				endl_joker = 0;
@@ -467,42 +472,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 				unregister_code(KC_LSHIFT);
 			}
 		}
-		/* if (em_forced  == 1) { */
-		/* 	if (keycode == _BSP || */
-		/* 		keycode == G(_C) || */
-		/* 		keycode == G(_X) || */
-		/* 		keycode == G(_V) || */
-		/* 		keycode == G(_SLS) || */
-		/* 		keycode == C(A(_BSL)) || */
-		/* 		keycode == RCMD || */
-		/* 		keycode == MACMETA || */
-		/* 		keycode == OSL_EDI */
-		/* 		) { */
-		/* 		em_forced = 0; */
-		/* 		unregister_code(KC_LSHIFT); */
-
-		/* 		if (keycode == G(_V)) */
-		/* 			send_string(SS_TAP(X_BSPACE)); */
-
-		/* 		if (keycode == OSL_EDI) */
-		/* 			oneshot_down = 1; */
-
-		/* 		return true; */
-		/* 	} */
-		/* 	if (keycode == G(_BSP)) { */
-		/* 		unregister_code(KC_LSHIFT); */
-		/* 		send_string(SS_LCTRL("xx")); */
-		/* 		register_code(KC_LSHIFT); */
-		/* 		return 1; */
-		/* 	} */
-		/*     if (keycode == G(_Z)) { */
-		/* 		unregister_code(KC_LSHIFT); */
-		/* 		em_forced = 0; */
-		/* 		return 0; */
-		/* 	} */
-		/* } */
 	}
 
+    /* lang switch */
 	if (record->event.pressed) {
 		if (keycode == _ENT ||
 			keycode == G(_ENT) ||
@@ -522,16 +494,15 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 		}
 	}
 
-	/* unregiterCmdAfterCMDTAB(); */
-	if (record->event.pressed) {
-		if (keycode != MACMETA) increase_timer();
-		if (keycode != LCTL)
-			lctl_timer += 2 * timer_threshold;
-		if (keycode != LSFT)
-			lsft_timer += 2 * timer_threshold;
-		if (keycode != RSFT)
-			rsft_timer += 2 * timer_threshold;
-	}
+	/* if (record->event.pressed) { */
+		/* if (keycode != MACMETA) increase_timer(); */
+		/* if (keycode != LCTL) */
+			/* lctl_timer += 2 * timer_threshold; */
+		/* if (keycode != LSFT) */
+			/* lsft_timer += 2 * timer_threshold; */
+		/* if (keycode != RSFT) */
+			/* rsft_timer += 2 * timer_threshold; */
+	/* } */
 
 	switch(keycode) {
 	case NEXT:
@@ -685,17 +656,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       /* clear_mods(); */
     }
     return 0;
-  case LSFT:
-	  if (record->event.pressed) {
-		  register_code(KC_LSFT);
-		  lsft_timer = timer_read();
-	  } else {
-		  unregister_code(KC_LSFT);
-		  if (timer_elapsed(lsft_timer) < timer_threshold) {
-			  SEND_STRING(" ");
-		  }
-	  }
-	  return false;
 } // end WINMETA MACMETA
   // CMD-TAB like keycodes
   if (biton32(layer_state) == MACOS_LR) {
@@ -1004,7 +964,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 	(_______,          _______, _______, _______, _______, _______, _______, _______, _COM,    _______, _______, _______, _______, _______, _______,
 	 _______,          _______, _______, _J,      _SLS,    _M,               _Q,      _U,      _Z,      _H,      _A,      _P,      _RBR,    _O,
 	 _______,          _G,      _F,      _T,      _B,      _BSP,             _K,      _R,      _N,      _Y,      _C,      _W,               _LBR,
-	 _DOT, _______,    _QUO,    _I,      _SCL,    _E,      _S,               _L,      _V,      _D,      _X,      _A,      _LBR,    _______, _______,
+	 _DOT, _______,    _QUO,    _I,      _SCL,    _E,      _______,          _L,      _V,      _D,      _X,      _S,      _LBR,    _______, _______,
 	 _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
 
 	LAYOUT_all //%% mod:os
@@ -1023,22 +983,22 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 
 	LAYOUT_all //%% oneshot:edi
 	(TEST,             _______, RALT(_N),RALT(_P),G(_UP),  G(_DN),  _______, G(_LBR), C(G(_DN)),C(_DN), C(_UP),  C(G(_UP)),_ESC,   _______, _______,
-	 _______,          G(_X),   JOKER,   G(_Z),   G(_BSP), G(_O),            C(A(G(_5))),_PGDN,_DN,     _UP,     _PGUP,   HYPR(_P),_______, _______,
-	 G(S(_D)),         G(_BSP), G(_V),   G(_C),   G(_SLS), _______,          G(_LT),  A(_LT),  _RT,     A(_RT),  G(_RT),  _DEL,             G(_UP),
-	 G(_X),   _______, CC_PLS,  CC_MIN,  A(_U), C(A(_BSL)),_______,          G(_RT),  _LT, A(S(_LBR)),A(S(_RBR)),C(_K),   G(_BSP), A(_BSL), _______,
+	 _______,          G(_X),   JOKER,   G(_Z),   G(_BSP), G(_O),            C(A(G(_5))),_PGDN,A(_LT),  A(_RT),  _PGUP,   HYPR(_P),_______, _______,
+	 G(S(_D)),         SURPAR,  G(_V),   G(_C),   G(_SLS), _______,          _LT,     _DN,     _UP,     _RT,   G(_RT),  _DEL,             G(_UP),
+	 G(_X),   _______, CC_PLS,  CC_MIN,  A(_U), C(A(_BSL)),_______,          C(G(_DN)),G(_LT), A(S(_LBR)),A(S(_RBR)),C(G(_UP)),C(_K),A(_BSL), _______,
 	 _______,                   _______, _______,          _BSP,    _______, _______,          _______, _______,          _______, _______, _______),
 
 	LAYOUT_all //%% sticky:sel
 	(_______,          _______, _______, _______, _______, _______, _______, G(_LBR), G(_RBR), _______, _______, _______, _______, _______, _______,
-	 _______,          _______, _______, _______, _______, CX_CX,            _______, S(_PGDN),S(_DN),  S(_UP), S(_PGUP), _______, _______, _______,
-	 _______,          _______, _______, _______, _______, _______,        S(G(_LT)), S(A(_LT)),S(_RT), S(A(_RT)),S(G(_RT)),_______,        _______,
-	 _______, _______, _______, _______, _______, _______, _______,          _______, S(_LT),  _______, _______, _______, _______, _______, _______,
+	 _______,          _______, _______, _______, _______, CX_CX,            _______, S(_PGDN),S(A(_LT)),S(A(_RT)),S(_PGUP),_______,_______,_______,
+	 _______,          _______, _______, _______, _______, _______,          S(_LT),  S(_DN),  S(_UP),  S(_RT), S(G(_RT)),  _______,        _______,
+	 _______, _______, _______, _______, _______, _______, _______,          _______, S(G(_LT)),_______,_______, _______, _______, _______, _______,
 	 _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
 
 	LAYOUT_all //%% sticky:sel2
 	(_______,          _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
 	 _______,          G(_X),   _______, PHONY,   _______, _______,          _______, _______, _______, _______, _______, _______, _______, _______,
-	 _______,          _______, G(_V),   G(_C),   _______, G(_X),            _______, _______, _______, _______, _______, _______,          _______,
+	 _______,          SURPAR,  G(_V),   G(_C),   _______, G(_X),            _______, _______, _______, _______, _______, _______,          _______,
 	 _______, _______, _______, _______, _______, _______, _______,          _______, _______, _______, _______, _______, _______, _______, _______,
 	 _______,                   _______, _______,          _BSP,    _______, _______,          _______, _______,          _______, _______, _______),
 
