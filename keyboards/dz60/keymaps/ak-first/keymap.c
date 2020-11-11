@@ -44,7 +44,6 @@ enum custom_keycodes {
 					  PYBLOCK,
 					  CBLOCK,
 					  BSP,
-					  SSHIFT,
 					  YANK,
 					  KILL,
 					  OSL_NUM,
@@ -74,9 +73,6 @@ enum custom_keycodes {
                       LSWITCH,
                       CMDTAB,
                       SCMDTAB,
-                      CMDTAB2,
-                      ALTTAB,
-                      SALTTAB,
                       ALTQUO,
                       LBR_RBR_LFT,
                       GQ,
@@ -264,7 +260,6 @@ static uint16_t timer, rcmd_timer;
 static const uint16_t timer_threshold = 250;
 static const uint16_t oneshot_threshold = 700, oneshot_next_threshold = 1500, joker_threshold = 2000;
 static uint8_t rgblight_mode_current = RGBLIGHT_MODE_KNIGHT + 1;
-static uint8_t em_forced = 0;
 
 static uint16_t oneshot_timer, oneshot_next_timer, rt_spc_timer, endl_joker_timer, esc_promise_timer;
 static uint8_t oneshot_down = 0, oneshot_fired = 0,
@@ -505,6 +500,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 			/* rsft_timer += 2 * timer_threshold; */
 	/* } */
 
+    // :layer_triggers
 	switch(keycode) {
 	case NEXT:
 		/* layer_off(SYM_LR); */
@@ -626,29 +622,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 		  oneshot_fired = 0;
 	  } else { }
 	  return false;
-  case LGUI:
-	  if (record->event.pressed) {
-		  timer = timer_read();
-		  register_code(KC_LGUI);
-	  } else {
-		  if (timer_elapsed(timer) < timer_threshold) {
-			  layer_off(EDI_LR);
-			  em_forced = 0;
-			  unregister_code(KC_LGUI);
-			  unregister_code(KC_LSHIFT);
-			  send_string(SS_LCTRL("g"));
-		  } else {
-			  unregister_code(KC_LGUI);
-		  }
-	  }
-	  return false;
-  case SSHIFT:
-	  if (record->event.pressed) {
-		  register_code(KC_LSHIFT);
-		  layer_on(EDI_LR);
-		  em_forced = 1;
-	  }
-	  return false;
   case TEST:
 	rgblight_mode_noeeprom(rgblight_mode_current++); // sets mode to Fast breathing without saving
 	return false;
@@ -667,8 +640,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       /* clear_mods(); */
     }
     return 0;
-} // end WINMETA MACMETA
-  // CMD-TAB like keycodes
+}
+    
+  // :cmd_tab
   if (biton32(layer_state) == MACOS_LR) {
 	  if (record->event.pressed) {
 		  switch(keycode) {
@@ -701,39 +675,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 				  unregister_code(KC_TAB);
 			  }
 			  return false;
-		  case CMDTAB2:
-			  if (record->event.pressed) {
-				  register_code(KC_LGUI);
-				  register_code(KC_TAB);
-				  unregister_code(KC_TAB);
-				  unregister_code(KC_LGUI);
-				  register_code(KC_LGUI);
-				  register_code(KC_TAB);
-				  unregister_code(KC_TAB);
-				  register_code(KC_TAB);
-				  unregister_code(KC_TAB);
-				  unregister_code(KC_LGUI);
-			  }
-			  return false;
 		  case SCMDTAB:
 			  if (record->event.pressed) {
 				  register_code(KC_LGUI);
-				  register_code(KC_LSHIFT);
-				  register_code(KC_TAB);
-				  unregister_code(KC_TAB);
-				  unregister_code(KC_LSHIFT);
-			  }
-			  return false;
-		  case ALTTAB:
-			  if (record->event.pressed) {
-				  register_code(KC_LALT);
-				  register_code(KC_TAB);
-				  unregister_code(KC_TAB);
-			  }
-			  return false;
-		  case SALTTAB:
-			  if (record->event.pressed) {
-				  register_code(KC_LALT);
 				  register_code(KC_LSHIFT);
 				  register_code(KC_TAB);
 				  unregister_code(KC_TAB);
@@ -773,24 +717,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 			  send_string(SS_LCTRL("x") "f" SS_LCTRL("["));
 	  }
 	  return false;
-  case _UP:
-	  if (record->event.pressed) {
-		  if (timer_elapsed(esc_promise_timer) < oneshot_threshold) {
-			  unregister_code(_LGUI);
-			  send_string(SS_TAP(X_ESCAPE));
-		  }
-	  }
-	  return 1;
-  case _DN:
-	  if (record->event.pressed) {
-		  if (timer_elapsed(esc_promise_timer) < oneshot_threshold) {
-			  unregister_code(_LGUI);
-			  send_string(SS_TAP(X_ESCAPE));
-		  }
-	  }
-	  return 1;
-}
+  }
 
+  /* :main */
   if (record->event.pressed) {
 	  switch(keycode) {
 	  case PHONY:
@@ -816,12 +745,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 	  case PLUSPLUS:
 		  send_string("++");
 		  return 0;
-	  }
-  }
-
-  /* :main */
-  if (record->event.pressed) {
-      switch(keycode) {
       case SURPAR:
           send_string(SS_LGUI("x") "()" SS_TAP(X_LEFT) SS_LGUI("v"));
           return 0;
@@ -981,7 +904,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 	LAYOUT_all //%% mod:os
 	(MOD_SWITCH,       _______, _F17,    _F18,    _______, _______, _______, _______, G(_W),   G(_LBR), G(A(_W)),G(_W),   G(_Z),   _______, _______,
 	 WIN,              _______, C(_G),   _ESC,    _F15,    _______,       G(A(S(_C))),A(_TAB),C(S(_TAB)),C(_TAB),A(S(_TAB)),G(_RBR), _______, _______,
-	 _______,          G(_X),   G(_V),   G(_C), GACS(_SPC),A(_BSP),         CMDTAB2, CMDTAB,  SCMDTAB,G(A(_C)), G(A(S(_C))),GQ,             _______,
+	 _______,          G(_X),   G(_V),   G(_C), GACS(_SPC),A(_BSP),          _______, CMDTAB,  SCMDTAB,G(A(_C)), G(A(S(_C))),GQ,             _______,
 	 _______, _______, G(_A),   _______, _______, _______, _______,          _______, G(_GRV), _______, _______, _______, _______, _______, RGB_TOG,
 	 _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
 
