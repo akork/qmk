@@ -13,6 +13,7 @@ enum custom_keycodes {
 					  TEST = SAFE_RANGE,
                       SURPAR,
 					  STICKY_SEL,
+                      SELECTL,
 					  PHONY,
 					  NEXT,
 					  NCOMMA,
@@ -526,6 +527,16 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 		} else {
 		}
 		return 0;
+    case SELECTL:
+		if (record->event.pressed) {
+			/* register_code(KC_LSHIFT); */
+            send_string(SS_DOWN(X_LGUI) SS_TAP(X_LEFT) SS_UP(X_LGUI));
+            send_string(SS_DOWN(X_LSHIFT) SS_TAP(X_DOWN) SS_UP(X_LSHIFT));
+			layer_on(SEL_LR);
+			layer_on(SEL2_LR);
+		} else {
+		}
+		return 0;
 	case OSL_REF:
 		if (record->event.pressed) {
 			oneshot_timer = timer_read();
@@ -810,7 +821,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
   /* :main */
   if (record->event.pressed) {
-	  switch(keycode) {
+      switch(keycode) {
       case SURPAR:
           send_string(SS_LGUI("x") "()" SS_TAP(X_LEFT) SS_LGUI("v"));
           return 0;
@@ -939,13 +950,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 		  return false;
 	  case COM_SPC_RU:
 		  send_string("? ");
-		  return 0;
-	  }
+		  return 0;}}
 
-  }
-
-  return true;
-}
+  return true;}
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 {
@@ -967,7 +974,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 	LAYOUT_all //%% plain:ru
 	(_______,          _______, _______, _______, _______, _______, _______, _______, _COM,    _______, _______, _______, _______, _______, _______,
 	 _______,          _______, _______, _J,      _SLS,    _M,               _Q,      _U,      _Z,      _H,      _A,      _P,      _RBR,    _O,
-	 _______,          _G,      _F,      _T,      _B,      _BSP,             _K,      _R,      _N,      _Y,      _C,      _W,               _LBR,
+	 _______,          _G,      _F,      _T,      _B,      _BSP,             _K,      _R,      _N,      _Y,      _C,      _W,               _______,
 	 _DOT, _______,    _QUO,    _I,      _SCL,    _E,      _______,          _L,      _V,      _D,      _X,      _S,      _LBR,    _______, _______,
 	 _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
 
@@ -986,8 +993,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 	 _______,                   _______, _______,          SCLSPC, _______, CCS,               _______, _______,          _______, _______, _______),
 
 	LAYOUT_all //%% oneshot:edi
-	(TEST,             _______, RALT(_N),RALT(_P),G(_UP),  G(_DN),  _______, G(_LBR), C(G(_DN)),C(_DN), C(_UP),  C(G(_UP)),_ESC,   _______, _______,
-	 _______,          G(_X),   JOKER,   G(_Z),   G(_BSP), G(_O),            C(A(G(_5))),_PGDN,A(_LT),  A(_RT),  _PGUP,   HYPR(_P),_______, _______,
+	(TEST,             _______, RALT(_N),RALT(_P),G(_UP),  G(_DN),  _______, G(_LBR), C(G(_DN)),C(_LT), C(_RT),  C(G(_UP)),_ESC,   _______, _______,
+	 _______,          G(_X),   JOKER,   G(_Z),   G(_BSP), G(_O),            C(A(G(_5))),_PGDN,A(_LT),  A(_RT),  _PGUP,   C(_K),   _______, _______,
 	 G(S(_D)),         SURPAR,  G(_V),   G(_C),   G(_SLS), _______,          _LT,     _DN,     _UP,     _RT,   G(_RT),  _DEL,             G(_UP),
 	 G(_X),   _______, CC_PLS,  CC_MIN,  A(_U), C(A(_BSL)),_______,          C(G(_DN)),G(_LT), A(S(_LBR)),A(S(_RBR)),C(G(_UP)),C(_K),A(_BSL), _______,
 	 _______,                   _______, _______,          _BSP,    _______, _______,          _______, _______,          _______, _______, _______),
@@ -1002,14 +1009,14 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 	LAYOUT_all //%% sticky:sel2
 	(_______,          _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
 	 _______,          G(_X),   _______, PHONY,   _______, _______,          _______, _______, _______, _______, _______, _______, _______, _______,
-	 _______,          SURPAR,  G(_V),   G(_C),   _______, G(_X),            _______, _______, _______, _______, _______, _______,          _______,
+	 _______,          SURPAR,  G(_V),   G(_C),   G(_SLS), G(_X),            _______, _______, _______, _______, _______, _______,          _______,
 	 _______, _______, _______, _______, _______, _______, _______,          _______, _______, _______, _______, _______, _______, _______, _______,
 	 _______,                   _______, _______,          _BSP,    _______, _______,          _______, _______,          _______, _______, _______),
 
 	LAYOUT_all //%% oneshot:sym
 	(_______,          _______, _______, _______, _______, _______, _______, _LBR,    S(_GRV), _QUO,    _GRV,    _RBR,    _______, _______, _______,
-	 _______,          _______, CCS,     G(_F),   _BSL,    S(_BSL),          S(_6),   S(_SCL), QUOTES,  S(_QUO), S(_DOT), _BSL,    _______, _______,
-	 _______,          S(_2),   _______, _______, LSWITCH, S(_1),            BRACKS,  PARENS,  S(_7),   S(_EQL), S(_4),   S(_3),            _______,
+	 _______,          _______, CCS,     G(_F),   _BSL,    S(_BSL),          S(_6),   S(_SCL), S(_QUO), S(_EQL), S(_DOT), _BSL,    _______, _______,
+	 _______,          S(_2),   _______, _______, LSWITCH, S(_1),            BRACKS,  PARENS,  S(_7),   SELECTL, S(_4),   S(_3),            _______,
 	 _______, _______, _______, _______, _______, _______, _______,          G(S(_G)),G(_G),   C(_W),   S(_8),   S(_SLS), _______, _______, _______,
 	 _______,                   _______, _______,          RT_SPC,  NEXT,    ENDL_JOKER,       _______, _______,          _______, _______, _______),
 
@@ -1031,7 +1038,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 	LAYOUT_all //%% oneshot:bra
 	(_______,          _______,PARENS_ENDL,S(_LBR),BRACES, S(_RBR), _______, _LBR,    G(S(_O)),G(_V),   _COM,    PYBLOCK, _______, _______, _______,
 	 _______,          S(_0),   S(_9),   ABRACKS, S(_COM), S(_DOT),          S(_6),   G(_P),   _MIN,    S(_QUO), PYBLOCK, PYBLOCK, _______, _______,
-	 C_ENT,            _RBR,    _LBR,    C(_ENT), S(_ENT), A(_ENT),          G(S(_O)),G(S(_P)),_______, S(_EQL), S(_4),   S(_3),           _______,
+	 C_ENT,            _RBR,    _LBR,    C(_ENT), C_ENT,   S(_ENT),          G(S(_O)),G(S(_P)),_______, S(_EQL), S(_4),   S(_3),           _______,
 	 _______, _______, _______, _______, _______, C(_ENT), _______,          LCTL(_R),CTA(_S), LCTL(_W),S(_8)   ,S(_SLS), _______, _______, _______,
 	 _______,                   _______, _______,          COM_SPC, C(_ENT), G(_ENT),          _______, _______,          _______, _______, _______),
 
@@ -1043,7 +1050,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 	 _______,                   _______, _______,        COM_SPC_RU,_______, _______,          _______, _______,          _______, _______, _______),
 
 	LAYOUT_all //%% oneshot:ide
-	(_______,          _______, _______, _______, _SCL,    _______, _______, _______, G(S(_W)),G(_P),   G(S(_E)),CX_3,    CX_RBRC, _______, CXCJ_0,
+	(_______,          _______, _______, G(_B),   _SCL,    _______, _______, _______, G(S(_W)),G(_P),   G(S(_E)),CX_3,    CX_RBRC, _______, CXCJ_0,
 	 _______,          _______, _______, _______, _______, S(_F6),           CX_G, G(C(S(_J))),HYPR(_O),CX_1,    G(S(_J)),HYPR(_G),_______, CX_LBRC,
 	 _______,          _______, _______, _______, _______, A(S(_1)),         A(S(_SCL)),C(S(_6)),S(_F10), C(_ENT),G(_S),  S(A(_F10)),       G(_F2),
 	 _______, _______, _______, _______, _______, _______, _______,          G(_L),C(A(S(_5))),CXCJ_CD,CXCJ_CC,  CXCJ_SD, CX_CC,   _______, _______,
@@ -1051,7 +1058,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 
 	LAYOUT_all //%% oneshot:ref
 	(_______,          _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
-	 _______,          _______, _______, _______, _______, _______,          _______, _______, _______, _______, _______, _______, _______, _______,
+	 _______,          _______, _______, PYBLOCK, _______, _______,          _______, _______, _______, _______, _______, _______, _______, _______,
 	 _______,          G(_U),   G(A(_B)),_F2,     _F12,    S(_F12),          _C,      _______, _______, _______, _______, EQL_EQL,          _______,
 	 _______, _______, _______, _______, _______, C(_MIN), _______,          _______, _______, _______, _______, _______, _______, _______, _______,
 	 _______,                   _______, _______,          EQL_SPC, _EQL,    _______,          _______, _______,          _______, _______, _______),
