@@ -5,14 +5,28 @@
     // Configure glob patterns for excluding files and folders.
     "files.exclude": {
         "**/.build": true,
-        "**/*.hex": true
+        "**/*.hex": true,
+        "**/*.bin": true
     },
     "files.associations": {
         "*.h": "c",
         "*.c": "c",
+        "*.inc": "c",
         "*.cpp": "cpp",
         "*.hpp": "cpp",
+<<<<<<< HEAD
         "xstddef": "c"
     },
     "python.pythonPath": "/usr/local/bin/python3.8"
+=======
+        "xstddef": "c",
+        "type_traits": "c",
+        "utility": "c",
+        "ranges": "c"
+    },
+    "[markdown]": {
+        "editor.trimAutoWhitespace": false,
+        "files.trimTrailingWhitespace": false
+    }
+>>>>>>> upstream/master
 }
