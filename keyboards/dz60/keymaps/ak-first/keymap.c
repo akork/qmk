@@ -11,6 +11,7 @@
 
 enum custom_keycodes {
 					  TEST = SAFE_RANGE,
+                      SQUO,
                       SPARENS,
                       SBRACKS,
 					  STICKY_SEL,
@@ -401,8 +402,17 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 		oneshot_fired_check(keycode, REF_LR, 1, OSL_REF);
 		oneshot_fired_check(keycode, BRA_LR, 3, OSL_BRA);
 		oneshot_fired_check(keycode, SYM_LR, 3, OSL_SYM);
-		if ((1UL << SEL2_LR) & layer_state && layer == SEL2_LR)
+		if ((1UL << SEL2_LR) & layer_state && layer == SEL2_LR) {
 			sel_off = 1;
+            /* send_string("j"); */
+            /* clear_mods(); */
+            send_string(SS_UP(X_LGUI) SS_UP(X_LSHIFT));
+			/* unregister_code(KC_LSHIFT); */
+			/* unregister_code(KC_RSHIFT); */
+			/* unregister_code(KC_LGUI); */
+			/* unregister_code(KC_RGUI); */
+
+        }
 		oneshot_fired_check(keycode, EDI_LR, 1, OSL_EDI);
 
 		/* if (EDI_LR == biton32(layer_state) && !em_forced) { */
@@ -606,7 +616,8 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 	  }
 	  return 0;
   case TEST:
-	rgblight_mode_noeeprom(rgblight_mode_current++); // sets mode to Fast breathing without saving
+      send_string(SS_DOWN(X_LSHIFT) SS_DOWN(X_LGUI) SS_TAP(X_RIGHT) SS_UP(X_LGUI) SS_UP(X_LSHIFT));
+	/* rgblight_mode_noeeprom(rgblight_mode_current++); // sets mode to Fast breathing without saving */
 	return false;
   case MACMETA:
     if (record->event.pressed) {
@@ -706,6 +717,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   if (record->event.pressed) {
 	  switch(keycode) {
 	  case PHONY:
+          send_string(SS_TAP(X_RIGHT));
 		  return 0;
 	  case NCOMMA:
 		  send_string(", ");
@@ -728,7 +740,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 	  case PLUSPLUS:
 		  send_string("++");
 		  return 0;
-      case SPARENS:
+      case SQUO:
+          send_string(SS_LGUI("x") "''" SS_TAP(X_LEFT) SS_LGUI("v"));
+          return 0;
+	  case SPARENS:
           send_string(SS_LGUI("x") "()" SS_TAP(X_LEFT) SS_LGUI("v"));
           return 0;
 	  case SBRACKS:
@@ -863,6 +878,22 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
   return true;}
 
+void post_process_record_user(uint16_t keycode, keyrecord_t *record) {
+	uint8_t layer = layer_switch_get_layer(record->event.key); // from which layer keycode flew in
+			/* unregister_code(KC_LSHIFT); */
+			/* unregister_code(KC_RSHIFT); */
+    /* send_string("a"); */
+    if ((1UL << SEL2_LR) & layer_state && layer == SEL_LR) {
+			/* sel_off = 1; */
+            /* clear_mods(); */
+            /* send_string(SS_UP(X_LGUI) SS_UP(X_LSHIFT)); */
+			unregister_code(KC_LSHIFT);
+			unregister_code(KC_RSHIFT);
+			unregister_code(KC_LGUI);
+			unregister_code(KC_RGUI);
+    }
+}
+
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 {
 
@@ -911,14 +942,14 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 	LAYOUT_all //%% sticky:sel
 	(_______,          _______, _______, _______, _______, _______, _______, G(_LBR), G(_RBR), _______, _______, _______, _______, _______, _______,
 	 _______,          _______, _______, _______, _______, CX_CX,            _______, S(_PGDN),S(A(_LT)),S(A(_RT)),S(_PGUP),_______,_______,_______,
-	 _______,          _______, _______, _______, _______, _______,          S(_LT),  S(_DN),  S(_UP),  S(_RT), S(G(_RT)),  _______,        _______,
+	 _______,          _______, _______, _______, _______, _______,          S(_LT),  S(_DN),  S(_UP),  S(_RT),  TEST,    _______,         _______,
 	 _______, _______, _______, _______, _______, _______, _______,          _______, S(G(_LT)),_______,_______, _______, _______, _______, _______,
 	 _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
 
 	LAYOUT_all //%% sticky:sel2
-	(_______,          _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
-	 _______,          G(_X),   SBRACKS, PHONY,   SPARENS, _______,          _______, _______, _______, _______, _______, _______, _______, _______,
-	 _______,          SPARENS,  G(_V),   G(_C),   G(_SLS), G(_X),            _______, _______, _______, _______, _______, _______,          _______,
+	(_______,          _______, _______, _______, _______, _______, _______, _______, _______, _LT,     _RT,     _______, _______, _______, _______,
+	 _______,          G(_X),   SBRACKS, PHONY,   SPARENS, SQUO,             _______, _______, _______, _______, _______, _______, _______, _______,
+	 _______,          G(S(_D)),G(_V),   G(_C),   G(_SLS), G(_X),            _______, _______, _______, _______, _______, _______,          _______,
 	 _______, _______, _______, _______, _______, _______, _______,          _______, _______, _______, _______, _______, _______, _______, _______,
 	 _______,                   _______, _______,          _BSP,    _______, _______,          _______, _______,          _______, _______, _______),
 
