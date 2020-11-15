@@ -11,7 +11,8 @@
 
 enum custom_keycodes {
 					  TEST = SAFE_RANGE,
-                      SURPAR,
+                      SPARENS,
+                      SBRACKS,
 					  STICKY_SEL,
                       SELECTL,
 					  PHONY,
@@ -36,7 +37,6 @@ enum custom_keycodes {
 					  ENDL_JOKER,
 					  RT_SPC,
 					  RT2_SPC,
-					  ADVANCE,
 					  SEARCH,
 					  CAPS,
 					  CAPSSPS,
@@ -266,7 +266,6 @@ static uint8_t oneshot_down = 0, oneshot_fired = 0,
 	oneshot_next_down = 0, oneshot_next_fired = 0;
 static uint8_t
     caps = 0,
-	comma_advance = 0,
  	rt_spc = 0,
 	endl_joker = 0,
 	ru_off = 0,
@@ -490,16 +489,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 		}
 	}
 
-	/* if (record->event.pressed) { */
-		/* if (keycode != MACMETA) increase_timer(); */
-		/* if (keycode != LCTL) */
-			/* lctl_timer += 2 * timer_threshold; */
-		/* if (keycode != LSFT) */
-			/* lsft_timer += 2 * timer_threshold; */
-		/* if (keycode != RSFT) */
-			/* rsft_timer += 2 * timer_threshold; */
-	/* } */
-
     // :layer_triggers
 	switch(keycode) {
 	case NEXT:
@@ -616,12 +605,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 		  unregister_code(_LGUI);
 	  }
 	  return 0;
-  case ADVANCE:
-	  if (record->event.pressed) {
-		  comma_advance = 1;
-		  oneshot_fired = 0;
-	  } else { }
-	  return false;
   case TEST:
 	rgblight_mode_noeeprom(rgblight_mode_current++); // sets mode to Fast breathing without saving
 	return false;
@@ -745,8 +728,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 	  case PLUSPLUS:
 		  send_string("++");
 		  return 0;
-      case SURPAR:
+      case SPARENS:
           send_string(SS_LGUI("x") "()" SS_TAP(X_LEFT) SS_LGUI("v"));
+          return 0;
+	  case SBRACKS:
+          send_string(SS_LGUI("x") "[]" SS_TAP(X_LEFT) SS_LGUI("v"));
           return 0;
 	  case MOD_SWITCH:
 		  mod ^= 1;
@@ -758,7 +744,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 		  send_string("= ");
 		  return 0;
 	  case ENDL_JOKER:
-		  send_string(SS_DOWN(X_LGUI) SS_TAP(X_RIGHT) SS_UP(X_LGUI) ";");
+		  send_string(SS_DOWN(X_LGUI) SS_TAP(X_RIGHT) SS_UP(X_LGUI) ":");
 		  endl_joker = 1;
 		  endl_joker_timer = timer_read();
 		  return false;
@@ -918,7 +904,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 	LAYOUT_all //%% oneshot:edi
 	(TEST,             _______, RALT(_N),RALT(_P),G(_UP),  G(_DN),  _______, G(_LBR), C(G(_DN)),C(_LT), C(_RT),  C(G(_UP)),_ESC,   _______, _______,
 	 _______,          G(_X),   JOKER,   G(_Z),   G(_BSP), G(_O),            C(A(G(_5))),_PGDN,A(_LT),  A(_RT),  _PGUP,   C(_K),   _______, _______,
-	 G(S(_D)),         SURPAR,  G(_V),   G(_C),   G(_SLS), _______,          _LT,     _DN,     _UP,     _RT,   G(_RT),  _DEL,             G(_UP),
+	 G(S(_D)),         G(S(_D)),G(_V),   G(_C),   G(_SLS), _______,          _LT,     _DN,     _UP,     _RT,   G(_RT),  _DEL,             G(_UP),
 	 G(_X),   _______, CC_PLS,  CC_MIN,  A(_U), C(A(_BSL)),_______,          C(G(_DN)),G(_LT), A(S(_LBR)),A(S(_RBR)),C(G(_UP)),C(_K),A(_BSL), _______,
 	 _______,                   _______, _______,          _BSP,    _______, _______,          _______, _______,          _______, _______, _______),
 
@@ -931,8 +917,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 
 	LAYOUT_all //%% sticky:sel2
 	(_______,          _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
-	 _______,          G(_X),   _______, PHONY,   _______, _______,          _______, _______, _______, _______, _______, _______, _______, _______,
-	 _______,          SURPAR,  G(_V),   G(_C),   G(_SLS), G(_X),            _______, _______, _______, _______, _______, _______,          _______,
+	 _______,          G(_X),   SBRACKS, PHONY,   SPARENS, _______,          _______, _______, _______, _______, _______, _______, _______, _______,
+	 _______,          SPARENS,  G(_V),   G(_C),   G(_SLS), G(_X),            _______, _______, _______, _______, _______, _______,          _______,
 	 _______, _______, _______, _______, _______, _______, _______,          _______, _______, _______, _______, _______, _______, _______, _______,
 	 _______,                   _______, _______,          _BSP,    _______, _______,          _______, _______,          _______, _______, _______),
 
