@@ -257,7 +257,6 @@ static uint16_t oneshot_timer, oneshot_next_timer, endl_joker_timer, esc_promise
 static uint8_t oneshot_down = 0, oneshot_fired = 0,
 	oneshot_next_down = 0, oneshot_next_fired = 0;
 static uint8_t
-shift_up_flag = 0,
     caps = 0,
 	endl_joker = 0,
 	ru_off = 0,
@@ -280,41 +279,21 @@ void keyboard_post_init_user(void) {
 }
 
 uint32_t layer_state_set_user(uint32_t state) {
-	/* rgblight_enable_noeeprom(); */
-	/* if () */
-
 	if (1UL << RU_LR & state) {
 		rgblight_enable_noeeprom();
-		/* rgblight_setrgb(0, 16, 0); //green */
 	} else {
 		rgblight_disable_noeeprom();
-		/* rgblight_setrgb(16, 0, 0); //green */
-		/* rgblight_disable_noeeprom(); */
 	}
 	return state;
 }
 
 void unregister_cmd_after_cmdtab(void) {
   uint8_t layer = biton32(layer_state);
-  /* bool isCmdOn = get_mods() & MOD_BIT(KC_LGUI); */
-  /* if (layer != META && isCmdSetByMeta && isCmdOn) { */
-  /*   unregister_mods(MOD_LGUI); */
-  /*   isCmdSetByMeta = false; */
-  /* } */
   if (layer == MACOS_LR) {
     unregister_mods(MOD_LGUI);
     unregister_mods(MOD_LALT);
   }
 };
-
-void increase_timer(void) {
-  uint8_t layer = biton32(layer_state);
-  if (layer == MACOS_LR) timer += 2 * timer_threshold;
-}
-
-/* static __attribute__ ((noinline)) void process_record_noinline(keyrecord_t *record) { */
-/* 	process_record(record); */
-/* } */
 
 static __attribute__ ((noinline)) void oneshot_check(uint32_t layer_mask) {
 	if (layer_mask & layer_state) {
@@ -347,113 +326,10 @@ void matrix_scan_user(void) {
 		}
 	}
 	
-	if (ru_off) {
-		if (1UL << RU_LR & layer_state) {
-			send_string(SS_LGUI(" "));
-			layer_off(RU_LR);
-			layer_off(RU_BRA_LR);
-			layer_off(RU_SYM_LR);
-			ru_off = 0;
-		}
-	}
  }
 
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-    if (oneshot_next_threshold == 42) {
-        oneshot_check(1);}
-    /* if (Iirecord->event.pressed */
-    if (shift_up_flag) {
-        /* send_string("i"); */
-        /* action_t action = store_or_get_action(record->event.pressed, record->event.key); */
-        /* process_action(record, action); */
-            /* del_key(keycode); */
-            /* del_mods(MOD_BIT(KC_LSFT)); */
-            /* send_keyboard_report(); */
-        /* shift_up_flag = 0; */
-        /* return false; */
-    }
-
-    
-    /* if ((keycode & QK_LSFT) == QK_LSFT || (keycode & QK_RSFT) == QK_RSFT) { */
-        if (false) {
-        /* shift_up_flag = 1; */
-        /* send_string("u"); */
-        action_t action = store_or_get_action(record->event.pressed, record->event.key);
-        /* action.key.mods &= ~(QK_LSFT | QK_RSFT); */
-keyevent_t event = record->event;
-    if (event.pressed) {
-        // clear the potential weak mods left by previously pressed keys
-                clear_weak_mods();
-                clear_mods();
-                del_mods(MOD_BIT(KC_LSFT));
-                send_keyboard_report();
-    }
-
-    
-        switch (action.kind.id) {
-        /* Key and Mods */
-        case ACT_LMODS:
-        case ACT_RMODS:
-            {
-                uint8_t mods = (action.kind.id == ACT_LMODS) ?  action.key.mods :
-                action.key.mods<<4;
-                /* if (mods & MOD_BIT(KC_LSFT)) */
-                    /* send_string("q"); */
-                if (event.pressed) {
-                    if (mods) {
-                        if (IS_MOD(action.key.code) || action.key.code == KC_NO) {
-                            // e.g. LSFT(KC_LGUI): we don't want the LSFT to be weak as it would make it useless.
-                            // This also makes LSFT(KC_LGUI) behave exactly the same as LGUI(KC_LSFT).
-                            // Same applies for some keys like KC_MEH which are declared as MEH(KC_NO).
-                            /* add_mods(mods & ~(QK_LSFT)); */
-                        } else {
-                            add_weak_mods(mods);
-                        }
-                        send_keyboard_report();
-                    }
-                    register_code(action.key.code);
-                    /* del_weak_mods(mods); */
-                    /* send_keyboard_report(); */
-                    /* unregister_code(action.key.code); */
-                    } else {
-                    unregister_code(action.key.code);
-                    if (mods) {
-                        if (IS_MOD(action.key.code) || action.key.code == KC_NO) {
-                            del_mods(mods);
-                        } else {
-                            del_weak_mods(mods);
-                        }
-                        send_keyboard_report();
-                    }
-                }
-            }
-            break;
-            }
-        /* process_action(record, action); */
-        return false;
-        /* if (record->event.pressed) { */
-            /* keycode &= ~(QK_LSFT | QK_RSFT); */
-
-            /* add_mods(MOD_BIT(KC_LSFT)); */
-            /* add_key(keycode); */
-            /* send_keyboard_report(); */
-
-            /* del_key(keycode); */
-            /* del_mods(MOD_BIT(KC_LSFT)); */
-            /* send_keyboard_report(); */
-        /* } */
-
-        /* return false; */
-    }
-
-    /* if (record->event.pressed) { */
-        /* if (keycode == S(_MIN)) { */
-            /* send_string("a"); */
-            /* del_mods(MOD_BIT(KC_LSFT)); */
-            /* send_keyboard_report(); */
-        /* } */
-    /* } */
     if (record->event.pressed) {
 		uint8_t layer = layer_switch_get_layer(record->event.key); // from which layer keycode flew in
 		oneshot_fired_check(keycode, EDI_LR, 1, OSL_EDI);
@@ -464,8 +340,6 @@ keyevent_t event = record->event;
 		oneshot_fired_check(keycode, REF_LR, 1, OSL_REF);
 		if ((1UL << SEL2_LR) & layer_state && layer == SEL2_LR) {
 			sel_off = 1;
-
-           
         }
         
 		/* ENDL_JOKER */
@@ -815,22 +689,15 @@ keyevent_t event = record->event;
         return true;}
 
 void post_process_record_user(uint16_t keycode, keyrecord_t *record) {
-	/* uint8_t layer = layer_switch_get_layer(record->event.key); // from which layer keycode flew in */
-    /* clear_mods(); */
-    /* if (record->event.pressed) { */
-        /* if (keycode == S(_MIN)) { */
-            /* send_string("b"); */
-            /* keycode &= ~(QK_LSFT | QK_RSFT); */
-            /* del_key(keycode); */
-            /* del_mods(MOD_BIT(KC_LSFT)); */
-            /* del_mods(MOD_BIT(KC_RSFT)); */
-            /* clear_mods(); */
-            /* add_key(KC_Q & ~(QK_LSFT | QK_RSFT)); */
-            /* send_keyboard_report(); */
-            /* send_string(SS_UP(X_LSHIFT) SS_DELAY(2000) "c"); */
-        /* } */
-    /* } */
-    
+	if (ru_off) {
+		if (1UL << RU_LR & layer_state) {
+			send_string(SS_LGUI(" "));
+			layer_off(RU_LR);
+			layer_off(RU_BRA_LR);
+			layer_off(RU_SYM_LR);
+			ru_off = 0;
+		}
+	}
     if (sel_off) {
 		if (1UL << SEL_LR & layer_state) {
 			layer_off(SEL2_LR);
@@ -901,7 +768,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 	 _______,                   _______, _______,          _BSP,    _______, _______,          _______, _______,          _______, _______, _______),
 
 	LAYOUT_all //%% oneshot:sym
-	(_______,          _______, _______, _______, _______, _______, _______, _LBR,    S(_GRV), _QUO,    _GRV,    _RBR,    _______, _______, _______,
+	(_______,          _______, _______, _______, _______, _______, _______, _LBR,    _QUO,    S(_GRV), _GRV,    _RBR,    _______, _______, _______,
 	 _______,          _______, CCS,     G(_F),   _BSL,    S(_BSL),          S(_6),   S(_SCL), S(_QUO), S(_EQL), S(_DOT), _BSL,    _______, _______,
 	 _______,          S(_2),   _______, _______, LSWITCH, S(_1),            BRACKS,  PARENS,  S(_7),   SELECTL, S(_4),   S(_3),            _______,
 	 _______, _______, _______, _______, _______, _______, _______,          G(S(_G)),G(_G),   C(_W),   S(_8),   S(_SLS), _______, _______, _______,
