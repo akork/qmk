@@ -233,6 +233,9 @@ void process_action(keyrecord_t *record, action_t action) {
     if (event.pressed) {
         // clear the potential weak mods left by previously pressed keys
         clear_weak_mods();
+        /* clear_mods(); */
+        /* del_mods(MOD_BIT(KC_LSFT)); */
+        send_keyboard_report();
     }
 
 #ifndef NO_ACTION_ONESHOT

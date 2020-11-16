@@ -36,7 +36,6 @@ enum custom_keycodes {
 					  EQL_EQL,
 					  EQL_SPC,
 					  ENDL_JOKER,
-					  RT_SPC,
 					  RT2_SPC,
 					  SEARCH,
 					  CAPS,
@@ -67,10 +66,6 @@ enum custom_keycodes {
                       CC_PLS,
                       CC_MIN,
                       CX_CC,
-                      CXCS,
-                      CXCS_CXE,
-                      CXCS_CZ,
-                      CXCS_CXCC,
                       LSWITCH,
                       CMDTAB,
                       SCMDTAB,
@@ -81,11 +76,6 @@ enum custom_keycodes {
                       CX_G,
                       CX_Z,
                       CX_F,
-                      CX_CF,
-                      CX_O,
-                      CX_B,
-                      CX_K,
-                      CX_0,
                       CX_1,
                       CX_3,
                       M0_CK,
@@ -254,6 +244,7 @@ enum {
 #define _END KC_END
 #define _DEL KC_DELETE
 #define GR(x) RGUI(x)
+/* #define S(x) RSHIFT(x) */
 
 #define SS_RGUI(string) SS_DOWN(X_RGUI) string SS_UP(X_RGUI)
 
@@ -262,12 +253,12 @@ static const uint16_t timer_threshold = 250;
 static const uint16_t oneshot_threshold = 700, oneshot_next_threshold = 1500, joker_threshold = 2000;
 static uint8_t rgblight_mode_current = RGBLIGHT_MODE_KNIGHT + 1;
 
-static uint16_t oneshot_timer, oneshot_next_timer, rt_spc_timer, endl_joker_timer, esc_promise_timer;
+static uint16_t oneshot_timer, oneshot_next_timer, endl_joker_timer, esc_promise_timer;
 static uint8_t oneshot_down = 0, oneshot_fired = 0,
 	oneshot_next_down = 0, oneshot_next_fired = 0;
 static uint8_t
+shift_up_flag = 0,
     caps = 0,
- 	rt_spc = 0,
 	endl_joker = 0,
 	ru_off = 0,
 	sel_off = 0,
@@ -325,11 +316,11 @@ void increase_timer(void) {
 /* 	process_record(record); */
 /* } */
 
-static __attribute__ ((noinline)) void oneshot_check(int LR, uint8_t layer_mask) {
-	if ((layer_mask << LR) & layer_state) {
+static __attribute__ ((noinline)) void oneshot_check(uint32_t layer_mask) {
+	if (layer_mask & layer_state) {
 		if ((!oneshot_down && oneshot_fired) ||
 			(!oneshot_down && timer_elapsed(oneshot_timer) > oneshot_threshold)) {
-			layer_off(LR);
+			layer_and(~layer_mask);
 		}
 	}
 }
@@ -342,38 +333,20 @@ void oneshot_fired_check(uint16_t keycode, int LR, uint8_t layer_mask, int TRIG)
 }
 
 void matrix_scan_user(void) {
-	oneshot_check(NUM_LR, 1);
-	oneshot_check(IDE_LR, 1);
-	oneshot_check(REF_LR, 1);
-	oneshot_check(EDI_LR, 1);
-	/* if (biton32(layer_state) == EDI_LR && !em_forced) { */
-		/* if ((!oneshot_down && oneshot_fired) || */
-			/* (!oneshot_down && timer_elapsed(oneshot_timer) > oneshot_threshold)) { */
-			/* layer_off(EDI_LR); */
-		/* } */
-	/* } */
+	oneshot_check(1UL << NUM_LR);
+	oneshot_check(1UL << IDE_LR);
+	oneshot_check(1UL << REF_LR);
+	oneshot_check(1UL << EDI_LR);
+    oneshot_check(3UL << SYM_LR);
+    oneshot_check(3UL << BRA_LR);
+    
 	if (biton32(layer_state) == NEXT_LR) {
 		if ((!oneshot_next_down && oneshot_next_fired) ||
 			(!oneshot_next_down && timer_elapsed(oneshot_next_timer) > oneshot_next_threshold)) {
 			layer_off(NEXT_LR);
 		}
 	}
-	if (((3UL << SYM_LR) & layer_state)) {
-		if ((!oneshot_down && oneshot_fired) ||
-			(!oneshot_down && timer_elapsed(oneshot_timer) > oneshot_threshold)) {
-			layer_off(SYM_LR);
-			if (1UL << RU_LR & layer_state)
-				layer_off(RU_SYM_LR);
-		}
-	}
-	if (((3UL << BRA_LR) & layer_state)) {
-		if ((!oneshot_down && oneshot_fired) ||
-			(!oneshot_down && timer_elapsed(oneshot_timer) > oneshot_threshold)) {
-			layer_off(BRA_LR);
-			if (1UL << RU_LR & layer_state)
-				layer_off(RU_BRA_LR);
-		}
-	}
+	
 	if (ru_off) {
 		if (1UL << RU_LR & layer_state) {
 			send_string(SS_LGUI(" "));
@@ -383,53 +356,118 @@ void matrix_scan_user(void) {
 			ru_off = 0;
 		}
 	}
-	if (sel_off) {
-		if (1UL << SEL_LR & layer_state) {
-			layer_off(SEL2_LR);
-			layer_off(SEL_LR);
-			layer_off(EDI_LR);
-			sel_off = 0;
-		}
-	}
-}
+ }
 
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    if (oneshot_next_threshold == 42) {
+        oneshot_check(1);}
+    /* if (Iirecord->event.pressed */
+    if (shift_up_flag) {
+        /* send_string("i"); */
+        /* action_t action = store_or_get_action(record->event.pressed, record->event.key); */
+        /* process_action(record, action); */
+            /* del_key(keycode); */
+            /* del_mods(MOD_BIT(KC_LSFT)); */
+            /* send_keyboard_report(); */
+        /* shift_up_flag = 0; */
+        /* return false; */
+    }
+
+    
+    /* if ((keycode & QK_LSFT) == QK_LSFT || (keycode & QK_RSFT) == QK_RSFT) { */
+        if (false) {
+        /* shift_up_flag = 1; */
+        /* send_string("u"); */
+        action_t action = store_or_get_action(record->event.pressed, record->event.key);
+        /* action.key.mods &= ~(QK_LSFT | QK_RSFT); */
+keyevent_t event = record->event;
+    if (event.pressed) {
+        // clear the potential weak mods left by previously pressed keys
+                clear_weak_mods();
+                clear_mods();
+                del_mods(MOD_BIT(KC_LSFT));
+                send_keyboard_report();
+    }
+
+    
+        switch (action.kind.id) {
+        /* Key and Mods */
+        case ACT_LMODS:
+        case ACT_RMODS:
+            {
+                uint8_t mods = (action.kind.id == ACT_LMODS) ?  action.key.mods :
+                action.key.mods<<4;
+                /* if (mods & MOD_BIT(KC_LSFT)) */
+                    /* send_string("q"); */
+                if (event.pressed) {
+                    if (mods) {
+                        if (IS_MOD(action.key.code) || action.key.code == KC_NO) {
+                            // e.g. LSFT(KC_LGUI): we don't want the LSFT to be weak as it would make it useless.
+                            // This also makes LSFT(KC_LGUI) behave exactly the same as LGUI(KC_LSFT).
+                            // Same applies for some keys like KC_MEH which are declared as MEH(KC_NO).
+                            /* add_mods(mods & ~(QK_LSFT)); */
+                        } else {
+                            add_weak_mods(mods);
+                        }
+                        send_keyboard_report();
+                    }
+                    register_code(action.key.code);
+                    /* del_weak_mods(mods); */
+                    /* send_keyboard_report(); */
+                    /* unregister_code(action.key.code); */
+                    } else {
+                    unregister_code(action.key.code);
+                    if (mods) {
+                        if (IS_MOD(action.key.code) || action.key.code == KC_NO) {
+                            del_mods(mods);
+                        } else {
+                            del_weak_mods(mods);
+                        }
+                        send_keyboard_report();
+                    }
+                }
+            }
+            break;
+            }
+        /* process_action(record, action); */
+        return false;
+        /* if (record->event.pressed) { */
+            /* keycode &= ~(QK_LSFT | QK_RSFT); */
+
+            /* add_mods(MOD_BIT(KC_LSFT)); */
+            /* add_key(keycode); */
+            /* send_keyboard_report(); */
+
+            /* del_key(keycode); */
+            /* del_mods(MOD_BIT(KC_LSFT)); */
+            /* send_keyboard_report(); */
+        /* } */
+
+        /* return false; */
+    }
+
+    /* if (record->event.pressed) { */
+        /* if (keycode == S(_MIN)) { */
+            /* send_string("a"); */
+            /* del_mods(MOD_BIT(KC_LSFT)); */
+            /* send_keyboard_report(); */
+        /* } */
+    /* } */
     if (record->event.pressed) {
 		uint8_t layer = layer_switch_get_layer(record->event.key); // from which layer keycode flew in
+		oneshot_fired_check(keycode, EDI_LR, 1, OSL_EDI);
 		oneshot_fired_check(keycode, NUM_LR, 1, OSL_NUM);
+		oneshot_fired_check(keycode, SYM_LR, 3, OSL_SYM);
+		oneshot_fired_check(keycode, BRA_LR, 3, OSL_BRA);
 		oneshot_fired_check(keycode, IDE_LR, 1, OSL_IDE);
 		oneshot_fired_check(keycode, REF_LR, 1, OSL_REF);
-		oneshot_fired_check(keycode, BRA_LR, 3, OSL_BRA);
-		oneshot_fired_check(keycode, SYM_LR, 3, OSL_SYM);
 		if ((1UL << SEL2_LR) & layer_state && layer == SEL2_LR) {
 			sel_off = 1;
-            /* send_string("j"); */
-            /* clear_mods(); */
-            send_string(SS_UP(X_LGUI) SS_UP(X_LSHIFT));
-			/* unregister_code(KC_LSHIFT); */
-			/* unregister_code(KC_RSHIFT); */
-			/* unregister_code(KC_LGUI); */
-			/* unregister_code(KC_RGUI); */
 
+           
         }
-		oneshot_fired_check(keycode, EDI_LR, 1, OSL_EDI);
-
-		/* if (EDI_LR == biton32(layer_state) && !em_forced) { */
-			/* if (keycode != OSL_EDI) */
-			    /* oneshot_fired = 1; */
-		/* } */
-
-        /* RT_SPC */
-		if (rt_spc == 1 && timer_elapsed(rt_spc_timer) < joker_threshold) {
-			/* if (keycode == MACMETA) { */
-			/* 	send_string(SS_TAP(X_BSPACE)); */
-			/* 	rt_spc = 0; */
-			/* 	return 1 ; */
-			/* } */
-		} else {
-			rt_spc = 0;
-		}
+        
 		/* ENDL_JOKER */
         if (endl_joker == 1 && timer_elapsed(endl_joker_timer) < joker_threshold) {
 			if (keycode == OSL_BRA) {
@@ -476,8 +514,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 				caps = 0;
 				unregister_code(KC_LSHIFT);
 			}
-		}
-	}
+		}}
 
     /* lang switch */
 	if (record->event.pressed) {
@@ -616,7 +653,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 	  }
 	  return 0;
   case TEST:
-      send_string(SS_DOWN(X_LSHIFT) SS_DOWN(X_LGUI) SS_TAP(X_RIGHT) SS_UP(X_LGUI) SS_UP(X_LSHIFT));
+      send_string(SS_DOWN(X_LSHIFT) SS_DOWN(X_LGUI) SS_TAP(X_LEFT) SS_UP(X_LGUI) SS_UP(X_LSHIFT));
 	/* rgblight_mode_noeeprom(rgblight_mode_current++); // sets mode to Fast breathing without saving */
 	return false;
   case MACMETA:
@@ -648,17 +685,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 		  	  unregister_code(KC_LALT);
 		  	  unregister_code(KC_RGUI);
 		  	  return 0;
-		  /* case G(A(S(_C))): */
-		  /* 	  register_code(KC_RGUI); */
-		  /* 	  register_code(KC_LALT); */
-		  /* 	  register_code(KC_LSHIFT); */
-		  /* 	  register_code(KC_C); */
-		  /* 	  unregister_code(KC_C); */
-		  /* 	  register_code(KC_LSHIFT); */
-		  /* 	  unregister_code(KC_LALT); */
-		  /* 	  unregister_code(KC_RGUI); */
-		  /* 	  return 0; */
-		  case CMDTAB:
+	      case CMDTAB:
 			  if (record->event.pressed) {
 				  if (get_mods() & MOD_BIT(KC_LSHIFT)) {
 					  del_mods(MOD_BIT(KC_LSHIFT));
@@ -713,11 +740,13 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 	  return false;
   }
 
+  
   /* :main */
   if (record->event.pressed) {
+          clear_weak_mods();
+          send_keyboard_report();
 	  switch(keycode) {
 	  case PHONY:
-          send_string(SS_TAP(X_RIGHT));
 		  return 0;
 	  case NCOMMA:
 		  send_string(", ");
@@ -727,18 +756,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 		  return 0;
 	  case C_ENT:
 		  send_string(SS_LCTRL(SS_TAP(X_ENTER)) SS_TAP(X_ENTER));
-		  return 0;
-	  case COUT:
-		  send_string(" << ");
-		  return 0;
-	  case CIN:
-		  send_string(" >> ");
-		  return 0;
-	  case NAMESPACE:
-		  send_string("::");
-		  return 0;
-	  case PLUSPLUS:
-		  send_string("++");
 		  return 0;
       case SQUO:
           send_string(SS_LGUI("x") "''" SS_TAP(X_LEFT) SS_LGUI("v"));
@@ -758,33 +775,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 	  case EQL_SPC:
 		  send_string("= ");
 		  return 0;
-	  case ENDL_JOKER:
-		  send_string(SS_DOWN(X_LGUI) SS_TAP(X_RIGHT) SS_UP(X_LGUI) ":");
-		  endl_joker = 1;
-		  endl_joker_timer = timer_read();
-		  return false;
-	  case RT_SPC:
-		  send_string(SS_TAP(X_RIGHT) " ");
-		  rt_spc = 1;
-		  rt_spc_timer = timer_read();
-		  return false;
-	  case RT2_SPC:
-		  send_string(SS_TAP(X_RIGHT) SS_TAP(X_RIGHT) " ");
-		  return false;
-	  case SCLSPC:
-		  SEND_STRING("; ");
-		  return false;
-	  case CCS:
-		  SEND_STRING(SS_DOWN(X_LGUI) SS_TAP(X_RIGHT) SS_UP(X_LGUI) ";");
-		  return false;
-	  case PYBLOCK:
-		  SEND_STRING(SS_DOWN(X_LGUI) SS_TAP(X_RIGHT) SS_UP(X_LGUI) ":" SS_TAP(X_ENTER));
-		  return false;
-	  case CBLOCK:
-		  SEND_STRING(SS_DOWN(X_LGUI) SS_TAP(X_RIGHT) SS_UP(X_LGUI) " ");
-	  case BL_BRACES:
-		  SEND_STRING("{}" SS_TAP(X_LEFT) SS_TAP(X_ENTER) SS_TAP(X_UP) SS_DOWN(X_LGUI) SS_TAP(X_RIGHT) SS_UP(X_LGUI) SS_TAP(X_ENTER) SS_TAP(X_TAB));
-		  return false;
 	  case BRACES:
 		  SEND_STRING("{}" SS_TAP(X_LEFT));
 		  return false;
@@ -815,60 +805,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 	  case CC_MIN:
 		  SEND_STRING(SS_LCTRL("c") "-");
 		  return false;
-	  case CXCS:
-		  SEND_STRING(SS_LCTRL("xs"));
-		  return false;
-	  case CX_CF:
-		  SEND_STRING(SS_LCTRL("xf"));
-	 	  return false;
-	  case CX_O:
-		  SEND_STRING(SS_LCTRL("x") "o");
-		  return false;
-	  case CX_B:
-		  SEND_STRING(SS_LCTRL("x") "b");
-		  return  false;
-	  case CX_K:
-		  SEND_STRING(SS_LCTRL("x") "k");
-		  return false;
-	  case CX_0:
-		  SEND_STRING(SS_LCTRL("x") "0");
-		  return false;
-	  case CX_1:
-		  SEND_STRING(SS_LCTRL("x") "1");
-		  return false;
-	  case CX_3:
-		  SEND_STRING(SS_LCTRL("x") "3");
-		  return false;
-	  case M0_CK:
-		  SEND_STRING(SS_LALT("0") SS_LCTRL("k"));
-		  return false;
-	  case CXCJ_0:
-		  SEND_STRING(SS_LCTRL("xj") "0");
-		  return false;
-	  case CXCJ_B:
-		  SEND_STRING(SS_LCTRL("xj") "b");
-		  return false;
-	  case CXCJ_CC:
-		  SEND_STRING(SS_LCTRL("xjc"));
-		  return false;
-	  case CXCJ_D:
-		  SEND_STRING(SS_LCTRL("xj") "d");
-		  return false;
-	  case CXCJ_CD:
-		  SEND_STRING(SS_LCTRL("xjd"));
-		  return false;
-	  case CX_P:
-		  SEND_STRING(SS_LCTRL("x") "p");
-		  return false;
-	  case CX_CP:
-		  SEND_STRING(SS_LCTRL("xp"));
-		  return false;
-	  case CX_RBRC:
-		  SEND_STRING(SS_LCTRL("x")"}");
-		  return false;
-	  case CX_LBRC:
-		  SEND_STRING(SS_LCTRL("x")"{");
-		  return false;
 	  case COM_SPC:
 		  SEND_STRING(", ");
 		  return false;
@@ -876,22 +812,33 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 		  send_string("? ");
 		  return 0;}}
 
-  return true;}
+        return true;}
 
 void post_process_record_user(uint16_t keycode, keyrecord_t *record) {
-	uint8_t layer = layer_switch_get_layer(record->event.key); // from which layer keycode flew in
-			/* unregister_code(KC_LSHIFT); */
-			/* unregister_code(KC_RSHIFT); */
-    /* send_string("a"); */
-    if ((1UL << SEL2_LR) & layer_state && layer == SEL_LR) {
-			/* sel_off = 1; */
+	/* uint8_t layer = layer_switch_get_layer(record->event.key); // from which layer keycode flew in */
+    /* clear_mods(); */
+    /* if (record->event.pressed) { */
+        /* if (keycode == S(_MIN)) { */
+            /* send_string("b"); */
+            /* keycode &= ~(QK_LSFT | QK_RSFT); */
+            /* del_key(keycode); */
+            /* del_mods(MOD_BIT(KC_LSFT)); */
+            /* del_mods(MOD_BIT(KC_RSFT)); */
             /* clear_mods(); */
-            /* send_string(SS_UP(X_LGUI) SS_UP(X_LSHIFT)); */
-			unregister_code(KC_LSHIFT);
-			unregister_code(KC_RSHIFT);
-			unregister_code(KC_LGUI);
-			unregister_code(KC_RGUI);
-    }
+            /* add_key(KC_Q & ~(QK_LSFT | QK_RSFT)); */
+            /* send_keyboard_report(); */
+            /* send_string(SS_UP(X_LSHIFT) SS_DELAY(2000) "c"); */
+        /* } */
+    /* } */
+    
+    if (sel_off) {
+		if (1UL << SEL_LR & layer_state) {
+			layer_off(SEL2_LR);
+			layer_off(SEL_LR);
+			layer_off(EDI_LR);
+			sel_off = 0;
+		}
+	}
 }
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
@@ -903,7 +850,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 	/* caps_lock,        a,       s,       d,       f,       g,                h,       j,       k,       l,       semicolon,quote,           backslash, */
 	/* left_shift,grave_accent_and_tilde,z,x,c,     v,       b,                n,       m,       comma,   period,  slash,   right_shift,,     , */
 	/* ,                          ,        ,                 ,       ,         ,        ,                 ,                 ,        ,        ) */
-
+        
 	LAYOUT_all //%% plain:en
 	(_F2,              _LGUI,   _ESC,    S(_MIN), OSL_IDE, S(_5),   _______, S(_EQL), _B,      _Y,    OSL_BRA,   _J,      G(S(_4)),_NO,     S(_F10),
 	 STICKY_SEL, OSM(MOD_LSFT), OSL_SYM, _O,      _DOT,    NEXT,             _MIN,    _G,      _C,      _R,      _F,      _K,      _SLS,    S(A(_F10)),
@@ -942,8 +889,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 	LAYOUT_all //%% sticky:sel
 	(_______,          _______, _______, _______, _______, _______, _______, G(_LBR), G(_RBR), _______, _______, _______, _______, _______, _______,
 	 _______,          _______, _______, _______, _______, CX_CX,            _______, S(_PGDN),S(A(_LT)),S(A(_RT)),S(_PGUP),_______,_______,_______,
-	 _______,          _______, _______, _______, _______, _______,          S(_LT),  S(_DN),  S(_UP),  S(_RT),  TEST,    _______,         _______,
-	 _______, _______, _______, _______, _______, _______, _______,          _______, S(G(_LT)),_______,_______, _______, _______, _______, _______,
+	 _______,          _______, _______, _______, _______, _______,          S(_LT),  S(_DN),  S(_UP),  S(_RT),  S(G(_RT)),_______,         _______,
+	 _______, _______, _______, _______, _______, _______, _______,          _______, G(S(_LT)),_______,_______, _______, _______, _______, _______,
 	 _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
 
 	LAYOUT_all //%% sticky:sel2
@@ -958,12 +905,12 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 	 _______,          _______, CCS,     G(_F),   _BSL,    S(_BSL),          S(_6),   S(_SCL), S(_QUO), S(_EQL), S(_DOT), _BSL,    _______, _______,
 	 _______,          S(_2),   _______, _______, LSWITCH, S(_1),            BRACKS,  PARENS,  S(_7),   SELECTL, S(_4),   S(_3),            _______,
 	 _______, _______, _______, _______, _______, _______, _______,          G(S(_G)),G(_G),   C(_W),   S(_8),   S(_SLS), _______, _______, _______,
-	 _______,                   _______, _______,          RT_SPC,  NEXT,    ENDL_JOKER,       _______, _______,          _______, _______, _______),
+	 _______,                   _______, _______,          _______,  NEXT,    ENDL_JOKER,       _______, _______,          _______, _______, _______),
 
 	
 	LAYOUT_all //%% oneshot:sym_ru
 	(_______,          _______, _______, _______, _______, _______, _______, _______, _______, S(_GRV), _GRV,    _______, _______, _______, _______,
-	 _______,          _______, _______,G(_ENT),  _______, _______,          S(_6),   S(_COM), _EQL,    S(_QUO), S(_DOT), _SLS,    _______, _______,
+	 _______,          _______, _______,G(_ENT),  _______, _______,          _______, S(_6),   S(_2),   _______, S(_DOT), _SLS,    _______, _______,
 	 _______,          _______, _______, _______, LSWITCH, _______,          S(_1),   S(_6),   S(_8),   S(_EQL), S(_4),   S(_3),            _______,
 	 _______, _______, _______, _______, _______, _______, _______,          LCTL(_R),CTA(_S), LCTL(_W),_______, S(_8),   _______, _______, _______,
 	 _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
@@ -991,7 +938,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 
 	LAYOUT_all //%% oneshot:ide
 	(_______,          _______, _______, G(_B),   _SCL,    _______, _______, _______, G(S(_W)),G(_P),   G(S(_E)),CX_3,    CX_RBRC, _______, CXCJ_0,
-	 _______,          _______, _______, _______, _______, S(_F6),           CX_G, G(C(S(_J))),HYPR(_O),CX_1,    G(S(_J)),HYPR(_G),_______, CX_LBRC,
+	 _______,          _______, _______, _______, _______, S(_F6),           CX_G, G(C(S(_J))),HYPR(_O),HYPR(_1),G(S(_J)),HYPR(_G),_______, CX_LBRC,
 	 _______,          _______, _______, _______, _______, A(S(_1)),         A(S(_SCL)),C(S(_6)),S(_F10), C(_ENT),G(_S),  S(A(_F10)),       G(_F2),
 	 _______, _______, _______, _______, _______, _______, _______,          G(_L),C(A(S(_5))),CXCJ_CD,CXCJ_CC,  CXCJ_SD, CX_CC,   _______, _______,
 	 _______,                   _______, _______,          SCLSPC,  SCLSPC,  CCS,              _______, _______,          _______, RGB_HUI, RGB_HUD),
@@ -1003,37 +950,3 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 	 _______, _______, _______, _______, _______, C(_MIN), _______,          _______, _______, _______, _______, _______, _______, _______, _______,
 	 _______,                   _______, _______,          EQL_SPC, _EQL,    _______,          _______, _______,          _______, _______, _______),
 };
-
-enum function_id {
-                  SHIFT_ESC,
-};
-
-const uint16_t PROGMEM fn_actions[] = {
-                                       [0]  = ACTION_FUNCTION(SHIFT_ESC),
-};
-
-void action_function(keyrecord_t *record, uint8_t id, uint8_t opt) {
-  static uint8_t shift_esc_shift_mask;
-  switch (id) {
-  case SHIFT_ESC:
-    shift_esc_shift_mask = get_mods()&MODS_CTRL_MASK;
-    if (record->event.pressed) {
-      if (shift_esc_shift_mask) {
-        add_key(KC_GRV);
-        send_keyboard_report();
-      } else {
-        add_key(KC_ESC);
-        send_keyboard_report();
-      }
-    } else {
-      if (shift_esc_shift_mask) {
-        del_key(KC_GRV);
-        send_keyboard_report();
-      } else {
-        del_key(KC_ESC);
-        send_keyboard_report();
-      }
-    }
-    break;
-  }
-}

@@ -1,1 +1,1 @@
-./keyboards/dz60/keymaps/ak-first/keymap.c
+/Users/ak/yd/cfg/qmk_firmware/keyboards/dz60/keymaps/ak-first/keymap.c
