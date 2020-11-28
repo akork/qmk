@@ -1,4 +1,4 @@
-// -*- compile-command: "make dz60:ak-first:dfu" -*-
+// -*- compile-command: "cd ../../../../ && make dz60:ak-first:dfu" -*-
 
 
 // option + f12 terminal
@@ -526,6 +526,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 		  unregister_code(_LGUI);
 	  }
 	  return 0;
+        case ENDL_JOKER:
+            send_string(SS_DOWN(X_LGUI) SS_TAP(X_RIGHT) SS_UP(X_LGUI) ":" SS_TAP(X_RETURN));
+            return 0;
+            
   case TEST:
       send_string(SS_DOWN(X_LSHIFT) SS_DOWN(X_LGUI) SS_TAP(X_LEFT) SS_UP(X_LGUI) SS_UP(X_LSHIFT));
 	/* rgblight_mode_noeeprom(rgblight_mode_current++); // sets mode to Fast breathing without saving */
@@ -719,7 +723,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 	/* ,                          ,        ,                 ,       ,         ,        ,                 ,                 ,        ,        ) */
         
 	LAYOUT_all //%% plain:en
-	(_F2,              _LGUI,   _ESC,    S(_MIN), OSL_IDE, S(_5),   _______, S(_EQL), _B,      _Y,    OSL_BRA,   _J,      G(S(_4)),_NO,     S(_F10),
+	(_F2,              _CAP,    _ESC,    S(_MIN), OSL_IDE, S(_5),   _______, S(_EQL), _B,      _Y,    OSL_BRA,   _J,      G(S(_4)),_NO,     S(_F10),
 	 STICKY_SEL, OSM(MOD_LSFT), OSL_SYM, _O,      _DOT,    NEXT,             _MIN,    _G,      _C,      _R,      _F,      _K,      _SLS,    S(A(_F10)),
 	 OSL_NUM,          _P,      _A,      _E,      _I,      _BSP,             _L,      _H,      _T,      _N,      _S,      OSL_REF,          G(A(_ENT)),
 	 _LSFT,    _A,     _J,      _Q,      S(_2),   _U,      _TAB,             _D,      _M,      _W,      _V,      _X,      _Z,      C(A(_Y)),_UP,
