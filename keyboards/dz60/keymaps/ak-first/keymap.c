@@ -563,6 +563,16 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 		  	  unregister_code(KC_LALT);
 		  	  unregister_code(KC_RGUI);
 		  	  return 0;
+          case G(A(S(_C))):
+		  	  register_code(KC_RGUI);
+		  	  register_code(KC_LALT);
+		  	  register_code(KC_LSFT);
+		  	  register_code(KC_C);
+		  	  unregister_code(KC_C);
+		  	  unregister_code(KC_LSFT);
+		  	  unregister_code(KC_LALT);
+		  	  unregister_code(KC_RGUI);
+		  	  return 0;
 	      case CMDTAB:
 			  if (record->event.pressed) {
 				  if (get_mods() & MOD_BIT(KC_LSHIFT)) {
@@ -738,9 +748,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 
 	LAYOUT_all //%% mod:os
 	(MOD_SWITCH,       _______, _F17,    _F18,    _______, _______, _______, _______, G(_W),   G(_LBR), G(A(_W)),G(_W),   G(_Z),   _______, _______,
-	 WIN,              _______, C(_G),   _ESC,    _F15,    _______,       G(A(S(_C))),A(_TAB),C(S(_TAB)),C(_TAB),A(S(_TAB)),G(_RBR), _______, _______,
-	 _______,          G(_X),   G(_V),   G(_C), GACS(_SPC),A(_BSP),          _______, CMDTAB,  SCMDTAB,G(A(_C)), G(A(S(_C))),GQ,             _______,
-	 _______, _______, G(_A),   _______, _______, _______, _______,          _______, G(_GRV), _______, _______, _______, _______, _______, RGB_TOG,
+	 WIN,              _______, C(_G),   _ESC,    _F15,    _______,          _______,A(_TAB),C(S(_TAB)),C(_TAB),A(S(_TAB)),G(_RBR), _______, _______,
+	 _______,          G(_X),   G(_V),   G(_C), GACS(_SPC),A(_BSP),          HYPR(_K),CMDTAB,  SCMDTAB,G(_S),    G(A(S(_C))),GQ,            _______,
+	 _______, _______, G(_A),   _______, _______, _______, _______,          _______, G(_GRV), _______, _______, G(A(_C)),_______, _______, RGB_TOG,
 	 _______,                   _______, _______,          _______, _______, _______,          _______, _______,          _______, _______, _______),
 
 	LAYOUT_all //%% oneshot:num
