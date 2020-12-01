@@ -763,8 +763,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 	LAYOUT_all //%% oneshot:edi
 	(TEST,             _______, RALT(_N),RALT(_P),G(_UP),  G(_DN),  _______, G(_LBR), C(G(_DN)),C(_LT), C(_RT),  C(G(_UP)),_ESC,   _______, _______,
 	 _______,          G(_X),   JOKER,   G(_Z),   G(_BSP), G(_O),            C(A(G(_5))),_PGDN,A(_LT),  A(_RT),  _PGUP,   C(_K),   _______, _______,
-	 G(S(_D)),         G(S(_D)),G(_V),   G(_C),   G(_SLS), _______,          _LT,     _DN,     _UP,     _RT,   G(_RT),  _DEL,             G(_UP),
-	 G(_X),   _______, CC_PLS,  CC_MIN,  A(_U), C(A(_BSL)),_______,          C(G(_DN)),G(_LT), A(S(_LBR)),A(S(_RBR)),C(G(_UP)),C(_K),A(_BSL), _______,
+	 G(S(_D)),         G(S(_D)),G(_V),   G(_C),   G(_SLS), _______,          _LT,     _DN,     _UP,     _RT,   G(_RT),  _DEL,               _______,
+	 G(_X),   _______, CC_PLS,  CC_MIN,  A(_U), C(A(_BSL)),_______,          G(_UP),G(_LT), A(S(_LBR)),A(S(_RBR)),G(_DN), _______, _______, _______,
 	 _______,                   _______, _______,          _BSP,    _______, _______,          _______, _______,          _______, _______, _______),
 
 	LAYOUT_all //%% sticky:sel
