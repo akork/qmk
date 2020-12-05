@@ -682,7 +682,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 		  SEND_STRING("~`" SS_TAP(X_LEFT));
 		  return false;
 	  case QUOTES:
-		  SEND_STRING("\"\"" SS_TAP(X_LEFT));
+		  SEND_STRING("''" SS_TAP(X_LEFT));
 		  return false;
 	  case ALTQUO:
 		  SEND_STRING(SS_LALT("`"));
@@ -734,9 +734,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
         
 	LAYOUT_all //%% plain:en
 	(_F2,              _CAP,    _ESC,    S(_MIN), OSL_IDE, S(_5),   _______, S(_EQL), _B,      _Y,    OSL_BRA,   _J,      G(S(_4)),_NO,     S(_F10),
-	 STICKY_SEL, OSM(MOD_LSFT), OSL_SYM, _O,      _DOT,    NEXT,             _TAB,    _G,      _C,      _R,      _F,      _K,      _SLS,    S(A(_F10)),
+	 STICKY_SEL, OSM(MOD_LSFT), OSL_SYM, _O,      _DOT,    _MIN,             NEXT,    _G,      _C,      _R,      _F,      _K,      _SLS,    S(A(_F10)),
 	 OSL_NUM,          _P,      _A,      _E,      _I,      _BSP,             _L,      _H,      _T,      _N,      _S,      OSL_REF,          G(A(_ENT)),
-	 _LSFT,    _A,     _J,      _Q,      S(_2),   _U,      _MIN,             _D,      _M,      _W,      _V,      _X,      _Z,      C(A(_Y)),_UP,
+	 _LSFT,    _A,     _J,      _Q,      S(_2),   _U,      _TAB,             _D,      _M,      _W,      _V,      _X,      _Z,      C(A(_Y)),_UP,
 	 _LCTL,                     _LGUI,   RALT,             _SPC,   OSL_EDI,  MACMETA, RCMD,             _VDN,             _VUP,    MACMETA, _SPC),
 
 	LAYOUT_all //%% plain:ru
@@ -783,9 +783,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 
 	LAYOUT_all //%% oneshot:sym
 	(_______,          _______, _______, _______, _______, _______, _______, _LBR,    _QUO,    S(_GRV), _GRV,    _RBR,    _______, _______, _______,
-	 _______,          _______, CCS,     G(_F),   _BSL,    S(_BSL),          S(_6),   S(_SCL), S(_QUO), S(_EQL), S(_DOT), _BSL,    _______, _______,
-	 _______,          S(_2),   _______, _______, LSWITCH, S(_1),            BRACKS,  PARENS,  S(_7),   SELECTL, S(_4),   S(_3),            _______,
-	 _______, _______, _______, _______, _______, _______, _______,          G(S(_G)),G(_G),   C(_W),   S(_8),   S(_SLS), _______, _______, _______,
+	 _______,          _______, CCS,     G(_F),   _BSL,    S(_BSL),          S(_6),   QUOTES, S(_QUO), S(_EQL), S(_DOT), _BSL,    _______, _______,
+	 _______,          S(_2),   _______, _______, LSWITCH, S(_1),            BRACKS,  PARENS,  S(_7),    S(_SCL), S(_4),   S(_3),           _______,
+	 _______, _______, _______, _______, _______, _______, _______,          G(S(_G)),G(_G),   G(_F),    S(_8),   S(_SLS), _______, _______, _______,
 	 _______,                   _______, _______,          _______,  NEXT,    ENDL_JOKER,       _______, _______,          _______, _______, _______),
 
 	
